@@ -1,0 +1,9 @@
+config.h
+config.*.h_
+trash.txt
+*.bin
+*.orig
+.pioenvs
+.piolibdeps
+.clang_complete
+.gcc-flags.json

@@ -1,0 +1,108 @@
+html, body {
+    font-family: Arial,"Helvetica Neue",Helvetica,sans-serif;
+    font-size: 13px;
+    line-height: 1.3em;
+    color: white;
+    margin: auto;
+    background: black;
+}
+
+.header-title {
+    font-size: 24px;
+    line-height: 1.35;
+    font-weight: normal;
+    margin-bottom: .5em;
+}
+
+.page-text {
+    word-wrap: break-word;
+    font-size: 15px;
+    line-height: 1.3;
+}
+
+.graph {
+    margin: auto;
+    width: 80%;
+    padding: 10px;
+    text-align: center;
+    background: black;
+}
+
+.graphs {
+    position:relative; display: flex; height: 200px;
+}
+
+.center {
+    margin: auto;
+    padding: 10px;
+    text-align: center;
+}
+
+.hidden {
+    display:none;
+}
+
+.table-header-rotated {
+  border-collapse: collapse;
+}
+.csstransforms .table-header-rotated td {
+  width: 30px;
+}
+.no-csstransforms .table-header-rotated th {
+  padding: 5px 10px;
+}
+.table-header-rotated td {
+  text-align: center;
+  padding: 10px 5px;
+  border: 1px solid #ccc;
+}
+.csstransforms .table-header-rotated th.rotate {
+  height: 160px;
+  white-space: nowrap;
+}
+.csstransforms .table-header-rotated th.rotate > div {
+  -webkit-transform: translate(25px, 51px) rotate(315deg);
+          transform: translate(25px, 51px) rotate(315deg);
+  width: 60px;
+}
+.csstransforms .table-header-rotated th.rotate > div > span {
+  border-bottom: 1px solid #ccc;
+  padding: 5px 10px;
+}
+.table-header-rotated th.row-header {
+  padding: 0 10px;
+  border-bottom: 1px solid #ccc;
+}
+
+
+.statusMenu {
+    height: 30px;
+    line-height: 27px;
+    background: #222233;
+    font-size: 14px;
+
+}
+
+.statusMenu .item {
+    float: left;
+    position: relative;
+    padding: 0 14px;
+    color: #bbbbbb;
+    cursor: pointer;
+}
+
+.statusMenu .item:hover {
+    border-top:   3px solid #090;
+    border-left:  1px dashed #090;
+    border-right: 1px dashed #090;
+    color: #dddddd;
+}
+
+input#inpgr:checked ~ .graphs {
+    display:none;
+}
+
+input#inptbl:checked ~ #stattables {
+    display:none;
+}
+

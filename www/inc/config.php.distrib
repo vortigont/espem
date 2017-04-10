@@ -1,0 +1,41 @@
+<?php
+
+// basepath
+define('DOC_ROOT', '/var/www/pmeter');
+define('SMARTY_DIR', DOC_ROOT . '/smarty/libs/');
+
+// Default powermeter address/hostname
+$default_meter = 'esp-pzem01';
+
+// DB options
+// DB engine (either 'sqlite' or 'mysql')
+$dbengine='mysql';
+
+#path to SQLite DB file
+$sqlitedb = '/var/db/pzem/pzem.sqlite';
+
+#MySQL DB settings
+$dbhost    = 'localhost';
+$dbport    = '3306';
+$dbuser    = 'pzemstat';
+$dbpass	   = 'somestatpa$s';
+$dbname    = 'pzem';
+$datatable = 'data';
+
+## Default values
+
+# Default meter device_id
+$devid=1;
+
+# Default powermeter hostname/ip-address
+$meterhost = 'esp-pzem01';
+
+# Daytime start hour (in 24h format)
+$dtsh = 7;     // starting from 7:00:00
+
+# Daytime end hour
+$dteh = 22;      // up to 22:59:59)
+
+
+ini_set('display_errors', 0);
+?>

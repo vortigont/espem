@@ -1,5 +1,6 @@
 // Default options
-// rename this file to config.h and make your changes
+// rename this file to config.h and make your changes before building the sketch
+
 // Board type. May use some board specfic LED's and pins
 // available types:
 // 	WITTY   - WittyCloud board
@@ -19,18 +20,17 @@
 // It's better not to share USB2serial pins for PZEM communication
 // Also it's not possible to use 'DEBUG' and 'UART0' at the same time
 // Use either UART1 pins or software serial on any other GPIO's available
-#define HWSERIAL_PORT UART1
+#define HWSERIAL_PORT UART0
 
 
-// RX/TX pins for sw_serial 
-// If 'USE_HWSERIAL=false' than use those GPIO pins for Software serial
+// RX/TX pins for sw_serial
+// If 'USE_HWSERIAL=false' than use this GPIO pins for Software serial
 #define PIN_RX  5   // only pins 0-5,12-15 are allowed for RX,TX on ESP
 #define PIN_TX  4   // 5, 4 is D1,D2 on NodeMCU board
-                    // 5,14 is D1,D5 on WittyCloud board
 
 // WiFi self AP-mode default SSID
 // will be defined automaticaly as "ESPEM_[ChipID]"
-					
+
 // WiFi self AP-mode default password (15 chars max)
 #define WIFI_PASSWD "PowerMeter"
 
@@ -48,10 +48,8 @@
 #define TZ_DL false
 
 
-// OTA updates options
-#define OTA_host "example.org"
-#define OTA_port 80
-#define OTA_uri "/esp/pzem/pzemesp.bin"
+// OTA update URL (80 chars max)
+#define OTA_url "http://example.org/espem/espem.bin"
 #define OTA_ver PMeterESP_VER
 
 // Power factor correction
@@ -67,7 +65,7 @@
 // If set to 'false' than p-meter polled for data only when requested from outside
 #define POLL_MODE true
 
-// Poll period for above (in seconds)
+// Pool period for above (in seconds)
 // must be no less than 2 seconds for stable operations
 #define POLL_PERIOD 10
 
@@ -80,4 +78,4 @@
 
 // program version of some kind
 // maybe used later in OTA updates
-#define PMeterESP_VER "espem_1.0.1"
+#define PMeterESP_VER "espem_1.0.2"

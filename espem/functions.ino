@@ -204,3 +204,23 @@ float pfcalc(const float result[]) {
   if (result[0] == 0 || result[1] == 0) return 0;
   return( result[2] / result[0] / result[1]);
 }
+
+
+// OTA update
+void otaclient( const String& url) {
+
+  timer.disable(poller_id);   // disable poller
+  Serial.println("Trying OTA Update...");
+  t_httpUpdate_return ret = ESPhttpUpdate.update(url, OTA_ver);
+  switch(ret) {
+    case HTTP_UPDATE_FAILED:
+        Serial.println("[update] Update failed");
+        break;
+    case HTTP_UPDATE_NO_UPDATES:
+        Serial.println("[update] No Updates");
+        break;
+    case HTTP_UPDATE_OK:
+        Serial.println("[update] Update OK"); // may reboot the ESP
+        break;
+    }
+}

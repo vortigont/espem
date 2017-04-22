@@ -1,8 +1,8 @@
 /*  ESPEM - ESP Energy monitor
  *  A code for ESP8266 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
- * 
- *  (c) Emil Muratov
+ *
+ *  (c) Emil Muratov 2017
  *
  */
 
@@ -27,7 +27,7 @@ pmeterData pdata;
   HardwareSerial hwser(HWSERIAL_PORT);
   PZEM004T pzem(&hwser);  // Connect to PZEM via HW_serial
 #else
-  PZEM004T pzem(PIN_RX, PIN_TX);  // Connect to PZEM via sw_serial pins 
+  PZEM004T pzem(PIN_RX, PIN_TX);  // Connect to PZEM via sw_serial pins
 #endif
 IPAddress ip(192,168,1,1);      // This one is the default
 
@@ -51,7 +51,7 @@ void setup() {
   pdata.current = &meterings[1];
   pdata.power   = &meterings[2];
   pdata.energy  = &meterings[3];
-  
+
   // start hw serial for debugging
   Serial.begin(115200);
 
@@ -68,12 +68,12 @@ void setup() {
 
   //Define server "pages"
   server.onNotFound( [](){server.send_P(200, PGmimehtml, PGindex);});  //return index for non-ex pages
-  server.on("/getpmdata",  wpmdata);
-  server.on("/ota",        otaclient);
-  server.on("/ver",    [](){server.send_P(200, PGmimetxt, PGver);});
-  server.on("/samples",    wsamples);
-  server.on("/cfg", HTTP_GET,  wcfgget);
-  server.on("/cfg", HTTP_POST, wcfgset);
+  server.on("/getpmdata",  wpmdata);		// text-formatted data-output (Cacti like)
+  server.on("/ota",        wota);		// OTA firmware update
+  server.on("/ver",    [](){server.send_P(200, PGmimetxt, PGver);});	// FW version
+  server.on("/samples",    wsamples);		// json with sampled meter data
+  server.on("/cfg", HTTP_GET,  wcfgget);	// get config (json)
+  server.on("/cfg", HTTP_POST, wcfgset);	// set config (json)
 
   // Start the Web-server
   server.begin();
@@ -91,12 +91,9 @@ void loop() {
 
   //serve web-client
   server.handleClient();
-  
+
   // do scheduled tasks
   timer.run();
 
   yield();
 }
-
-
-

@@ -11,24 +11,20 @@ void wpmdata() {
   }
     String data;
     server.send(200, FPSTR(PGmimetxt), mktxtdata(data) );
-    data=String();
 }
 
 // try OTA Update
-void otaclient() {
-  Serial.println("Trying OTA Update...");
-  t_httpUpdate_return ret = ESPhttpUpdate.update(OTA_host, OTA_port, OTA_uri, OTA_ver);
-  switch(ret) {
-    case HTTP_UPDATE_FAILED:
-        Serial.println("[update] Update failed");
-        break;
-    case HTTP_UPDATE_NO_UPDATES:
-        Serial.println("[update] No Updates");
-        break;
-    case HTTP_UPDATE_OK:
-        Serial.println("[update] Update OK"); // may reboot the ESP
-        break;
-  }
+void wota() {
+    String otaurl;
+    if(server.hasArg("url")) {    // update via url arg if provided
+        otaurl = server.arg("url");
+    } else {                      // otherwise use url from EEPROM config
+        cfg conf;
+        cfgload(conf);
+        otaurl = conf.cOTAurl;
+    }
+    server.send_P(200, PGmimetxt, PGota );
+    otaclient(otaurl);
 }
 
 /*  Webpage: Provide json encoded config data
@@ -37,11 +33,7 @@ void otaclient() {
 void wcfgget() {
   cfg conf;           // struct for config data
   cfgload(conf);      // Load config from EEPROM
-
-  char buff[150];      // let's keep it simple and do some sprintf magic
-  sprintf_P(buff, PGcfgjson, conf.chostname, conf.cWmode, conf.cWssid, conf.cpf_fix, conf.cpoll, conf.cpoll_period);
-  Serial.print("HTTP cfgget:"); Serial.println(buff);
-  server.send(200, FPSTR(PGmimejson), buff );
+  cfg2json(conf);     // send it as json
 }
 
 // dumb func for timer
@@ -54,58 +46,58 @@ void espreboot() {
  *  Use form-posted json object to update data in EEPROM
  */
 void wcfgset() {
-  Serial.println("HTTP config update");
-  //Serial.println(server.arg("plain"));    //Debug
+  //Serial.print("HTTP cfg update:"); Serial.println(server.arg("plain"));    //Debug
 
-  if (!cfgupdate( server.arg("plain")) )    server.send_P(500, PGmimejson, PGdre);  //return error on update failure
-
-  wcfgget();                                                  // Actual respone is done via calling "cfgget()" page
-  int restartId = timer.setTimeout(20000, &espreboot);    // there was a config update, so I need either do all the tasks to update setup
-                                                             // or reboot it all...
-                                                             // just give it some time to try new WiFi setup if required
-}
-
-
-
-/*
- *  Parse config json data and update EEPROM
- */
-bool cfgupdate( const String& json) { //Using String gives big mem overhead
-
-  StaticJsonBuffer<300> buff;
-  JsonObject& jsoncfg = buff.parseObject(json);
+  //bool cfgupdate( const String& json) { //Using String gives big mem overhead
+  const size_t bufferSize = 2*JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(7) + 180;
+  StaticJsonBuffer<bufferSize> buff;
+  JsonObject& jsoncfg = buff.parseObject(server.arg("plain"));
 
   if (!jsoncfg.success()) {
-      return false;           // return error if json is unparsable
+    server.send_P(500, PGmimejson, PGdre);   // return http-error if json is unparsable
+      return;
   }
+  //jsoncfg.printTo(Serial); //Debug
 
   cfg conf;           // struct for config data
   cfgload(conf);      // Load config from EEPROM
 
-   //jsoncfg.printTo(Serial); //Debug
-   
-  snprintf(conf.chostname, sizeof conf.chostname, "%s", jsoncfg["wH"]);
+  snprintf(conf.chostname, sizeof conf.chostname, "%s", jsoncfg["wH"].as<const char*>());
   conf.cpf_fix = jsoncfg.containsKey("pf") ? 1 : 0;
   conf.cpoll = jsoncfg.containsKey("pM") ? 1 : 0;
   conf.cpoll_period = atoi(jsoncfg["pP"].as<const char*>());
+  snprintf(conf.cOTAurl, sizeof(conf.cOTAurl), "%s", jsoncfg["uU"].as<const char*>());
 
   if (jsoncfg.containsKey("wA")) {             //We have new WiFi settings
       conf.cWmode = atoi(jsoncfg["wM"].as<const char*>());
       if (conf.cWmode) {                      // we have non-station config => save SSID/passwd to eeprom
           snprintf(conf.cWssid, sizeof(conf.cWssid), "%s", jsoncfg["wS"]);
-          snprintf(conf.cWpwd,  sizeof(conf.cWpwd), " %s", jsoncfg["wP"]);  // save password only for internal AP-mode, but never for client
+          snprintf(conf.cWpwd,  sizeof(conf.cWpwd),  "%s", jsoncfg["wP"]);  // save password only for internal AP-mode, but never for client
       } else {                                // try to connect to the AP with a new settings
-            WiFi.mode(WIFI_AP_STA);              // Make sure we are in a client mode
+            WiFi.mode(WIFI_AP_STA);           // Make sure we are in a client mode
             WiFi.begin(jsoncfg["wS"].as<const char*>(), jsoncfg["wP"].as<const char*>()); // try to connect to the AP, event scheduler will
                                                                                           // take care of disabling internal AP-mode if success
       }
   }
 
-  //jsoncfg.printTo(Serial);
   cfgsave(conf);    // Update EEPROM
-  return true;
+  cfg2json(conf);   // return current config as serialised json
+
+  if (jsoncfg.containsKey("uA")) {
+      otaclient(jsoncfg["uU"].as<String>());  //Initiate OTA update
+  } else {                                                  // there was a config update, so I need either do all the tasks to update setup
+      int restartId = timer.setTimeout(20000, &espreboot);  // or reboot it all...
+  }                                                          // just give it some time to try new WiFi setup if required
+
 }
 
+// Takes config struct and sends it as json via http
+void cfg2json(const cfg &conf) {
+  char buff[sizeof(conf) + 50];      // let's keep it simple and do some sprintf magic
+  sprintf_P(buff, PGcfgjson, conf.chostname, conf.cWmode, conf.cWssid, conf.cpf_fix, conf.cpoll, conf.cpoll_period, conf.cOTAurl);
+  Serial.print("EEPROM cfg:"); Serial.println(buff);  //Debug
+  server.send(200, FPSTR(PGmimejson), buff );
+}
 
 // return json-formatted response for in-RAM sampled data
 void wsamples() {
@@ -137,5 +129,3 @@ void wsamples() {
   server.sendContent(""); // send empty chunk and notify the client that there will be no more data
   server.client().stop(); // Force connection close 'cause the were no content length header
 }
-
-

@@ -7,6 +7,8 @@
     MultiSelect fileds filling not tested.
 
     Based on tutor  https://code.lengstorf.com/get-form-values-as-json/
+
+	Should be minimized before uploading to the esp (for e.x. via https://jscompress.com/)
 */
 
 var formurl = "cfg";
@@ -16,7 +18,7 @@ const handleFormSubmit = event => {
   event.preventDefault();
   const data = formToJSON(form.elements);
   ajax_request(formurl, 'POST', data, function(data){process_resp(data);});
-  alert("Saving config. Autoreboot in 30 sec...");
+  alert("Saving config. Autoreboot in 20 sec...");
 };
 
 const formToJSON = elements => [].reduce.call(elements, (data, element) => {

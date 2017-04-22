@@ -1,7 +1,7 @@
 /*  ESPEM - ESP Energy monitor
  *  A code for ESP8266 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
- * 
+ *
  *  (c) Emil Muratov 2017
  *
  */
@@ -29,7 +29,7 @@
 #include <ArduinoJson.h>
 
 
-// ========= Variables  
+// ========= Variables
 
 // This vars are stored in EEPROM
 struct cfg {
@@ -40,6 +40,7 @@ struct cfg {
     byte cpoll;                     // Polling enabled
     byte cpoll_period;              // Polling period
     byte cpf_fix;                   // Power Factor correction
+    char cOTAurl[80];               // OTA URL
 };
 
 
@@ -64,6 +65,7 @@ void cfgReset(cfg &conf) {
     conf.cpoll   = POLL_MODE;
     conf.cpoll_period=POLL_PERIOD;
     conf.cpf_fix = PF_CORRECTION;
+    snprintf(conf.cOTAurl, sizeof conf.cOTAurl, "%s", OTA_url);
 }
 
 // Read/Write structs to EEPROM
@@ -87,8 +89,8 @@ template <class T> size_t EEPROM_readAny(size_t ee, T& value)
 }
 
 // CRC calc for EEPROM config
-byte crc8( byte crc, byte ch ) 
-{  
+byte crc8( byte crc, byte ch )
+{
     for (uint8_t i = 8; i; i--) {
       uint8_t mix = crc ^ ch;
       crc >>= 1;
@@ -173,4 +175,3 @@ class NullSerialClass // a do-nothing class to replace Serial
 } NullSerial;
 #define Serial NullSerial
 #endif
-

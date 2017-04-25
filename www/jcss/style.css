@@ -83,7 +83,7 @@ html, body {
 
 }
 
-.statusMenu .item {
+.item {
     float: left;
     position: relative;
     padding: 0 14px;
@@ -91,11 +91,43 @@ html, body {
     cursor: pointer;
 }
 
-.statusMenu .item:hover {
+.item:hover {
     border-top:   3px solid #090;
     border-left:  1px dashed #090;
     border-right: 1px dashed #090;
-    color: #dddddd;
+}
+
+.sel {
+    padding: 0 1px;
+    overflow: hidden;
+}
+
+.sel select {
+    width: 100px;
+    background: transparent;
+    border: none;
+    color: #bbb;
+    font-size: 14px;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: url(arr.png) no-repeat 96% / 15% #222233;
+}
+
+.sel select::-ms-expand {
+    display: none; /* hide the default arrow in ie10 and ie11 */
+}
+
+.semisq {
+    border-radius: 5px;
+}
+
+a.menu:link {
+    text-decoration: none;
+}
+
+a.menu:visited {
+    color: #bbbbbb;
 }
 
 input#inpgr:checked ~ .graphs {

@@ -45,7 +45,7 @@
     AmCharts.makeChart("GaugePF", {include file="chartPFGauge.json.tpl"} );
 </script>
 
-<!-- amCharts - Samles -->
+<!-- amCharts - Samples minichart -->
 <script type="text/javascript">
     AmCharts.makeChart("SamplesMini", {include file="chartsamplesmini.json.tpl"} );
 </script>
@@ -65,9 +65,17 @@
 <div id="mainpage" style="width: 95%; position:relative; margin: auto;" >
 
 <div class="statusMenu">
+    <div class="item sel">
+        <form action="" method="get">
+        <select name="devid" id="devselect" onchange="this.form.submit()">
+        {foreach key=row item=data from=$devlist}
+        <option {if $data.id eq $devid}selected{/if} value="{$data.id}">{$data.name}</option>
+        {/foreach}
+        </select></form>
+    </div>
     <div class="item"><label for="inpgr">Graphs</label></div>
     <div class="item"><label for="inptbl">Tables</label></div>
-    <div class="item"><a href="chart.html">Samples</a></div>
+    <div class="item"><a class="menu" href="?s=psamples&devid={$devid}">Samples</a></div>
 </div>
 
 <input type="checkbox" id="inpgr" class="hidden">

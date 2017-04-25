@@ -100,7 +100,9 @@ WHERE devid='$devid'
 ORDER BY dtime DESC
 LIMIT 1";
 
-
+//-- Meters meter
+$sql['devlist'] =
+"SELECT * FROM meters ORDER BY name";
 
 
 // $sql['some'] = <<<SQL

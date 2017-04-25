@@ -35,8 +35,7 @@ LEFT JOIN
       FROM data
         WHERE devid='$devid'
             AND DATETIME(dtime, 'localtime') > DATE('now', '-1 MONTH')
-            AND ( cast(strftime('%H', dtime, 'localtime') as int) > $dtsh OR cast( strftime('%H', dtime, 'l
-ocaltime') as int) < $dteh)
+            AND ( cast(strftime('%H', dtime, 'localtime') as int) > $dtsh OR cast( strftime('%H', dtime, 'localtime') as int) < $dteh)
         GROUP by DATE(dtime, 'localtime')
     ) dayt
 ON allday.date = dayt.date
@@ -106,6 +105,10 @@ WHERE devid='$devid'
 ORDER BY dtime DESC
 LIMIT 1";
 
+//-- Meters list
+$sql['devlist'] = <<<SQL
+"SELECT * FROM meters ORDER BY name"
+SQL;
 
 
 // $sql['some'] = <<<SQL

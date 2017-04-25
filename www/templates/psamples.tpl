@@ -2,9 +2,8 @@
 <html>
     <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<meta name="description" content="chart created using amCharts live editor" />
-	<title>chart created with amCharts | amCharts</title>
-
+	<meta name="description" content="PZEM PowerMeter - samples chart" />
+	<title>Espem PowerMeter - samples chart</title>
 
 	<!-- amCharts javascript sources -->
 	<script src="https://www.amcharts.com/lib/3/amcharts.js" type="text/javascript"></script>
@@ -32,7 +31,7 @@ var getJSON = function(url, ok, err) {
 	xhr.send();
 };
 
-getJSON('index.php?s=chart&id=samples',
+getJSON('?s=chart&id=samples&devid={$devid}',
     function(data) {
 	AmCharts.makeChart("chartsamples", data);
     },
@@ -40,7 +39,6 @@ getJSON('index.php?s=chart&id=samples',
 	console.log('Error loading chart chartsamples');
     }
 );
-
 </script>
     </head>
     <body>

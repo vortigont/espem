@@ -6,6 +6,8 @@
  *
  */
 
+#define HWSERIAL_PORT UART0
+
 // Sketch configuration
 #include "config.h"
 // HTTP related def's

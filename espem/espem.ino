@@ -52,6 +52,10 @@ void setup() {
   pdata.power   = &meterings[2];
   pdata.energy  = &meterings[3];
 
+  #if HWSERIAL_SWAP
+    hwser.swap()  //swap hw_serial pins to gpio13,15
+  #endif
+
   // start hw serial for debugging
   Serial.begin(115200);
 

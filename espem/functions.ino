@@ -89,6 +89,7 @@ bool pollMeter(PZEM004T* meter, float result[] , bool fixpf) {
   PZPTMF pzdatafunc[4]= {&PZEM004T::voltage, &PZEM004T::current, &PZEM004T::power, &PZEM004T::energy};
 
   float newData[4];
+  bool isdata = false; // non-zero data from meter
 
   //fill the array with new meter data
   for ( uint8_t i = 0; i != 4; ++i) {
@@ -105,8 +106,11 @@ bool pollMeter(PZEM004T* meter, float result[] , bool fixpf) {
 
       yield();  	// feed the watchdog and make other code happy after a long read operation
       if ( newData[i] < 0) { pzemrdy = false; return false; }         // return on error reading meter
+      isdata = newData[i] || isdata;
   }
 
+  // consider it as an error if all data from meter was equal to zero
+  if (!isdata) return false;
   // correct pF value if required   I = P/U
   if (fixpf && (pfcalc(newData) > 1.1) ) newData[1] = newData[2] / newData[0];
 

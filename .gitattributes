@@ -1,0 +1,8 @@
+*.ino text
+*.tpl text
+
+*.ino linguist-language=C++
+*.ino diff=cpp
+
+www/jcss/*.js linguist-vendored
+www/templates/*.tpl linguist-vendored

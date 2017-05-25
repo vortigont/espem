@@ -53,7 +53,7 @@ void setup() {
   pdata.energy  = &meterings[3];
 
   #if HWSERIAL_SWAP
-    hwser.swap()  //swap hw_serial pins to gpio13,15
+    hwser.swap();  //swap hw_serial pins to gpio13(rx),15(tx)
   #endif
 
   // start hw serial for debugging

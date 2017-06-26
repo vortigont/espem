@@ -83,7 +83,7 @@ bool pollMeter(PZEM004T* meter, float result[] , bool fixpf) {
   //check for poll delay timeout
   if ( millis()-lastpoll < polldelay ){return false;};
 
-  if ( not pzemrdy ) { pzemrdy = pzeminit(); yield();}  // reconnect to the power meter
+  if ( not pzemrdy ) { pzemrdy = pzeminit(); }  // reconnect to the power meter
 
   //make pointer array to funtions
   PZPTMF pzdatafunc[4]= {&PZEM004T::voltage, &PZEM004T::current, &PZEM004T::power, &PZEM004T::energy};
@@ -104,7 +104,6 @@ bool pollMeter(PZEM004T* meter, float result[] , bool fixpf) {
         digitalWrite(LED_g, LOW);
       #endif  // BOARD_WITTY
 
-      yield();  	// feed the watchdog and make other code happy after a long read operation
       if ( newData[i] < 0) { pzemrdy = false; return false; }         // return on error reading meter
       isdata = newData[i] || isdata;
   }

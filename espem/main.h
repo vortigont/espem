@@ -20,7 +20,9 @@
 #include <ESP8266httpUpdate.h>
 
 //#include <SoftwareSerial.h> // Must be a special lib for ESP!	https://github.com/plerup/espsoftwareserial
-#include <PZEM004T.h>         // Peacefair PZEM-004T Energy monitor https://github.com/olehs/PZEM004T
+#include <PZEM004T.h>		// Peacefair PZEM-004T Energy monitor https://github.com/vortigont/PZEM004T
+				// a forked version of oleh's lib with a fix for esp platform
+				// (should switch back if merged to oleh's master https://github.com/olehs/PZEM004T)
 
 #include <SimpleTimer.h>     	// Simple timers        https://github.com/jfturcot/SimpleTimer
 

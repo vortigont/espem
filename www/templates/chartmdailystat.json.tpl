@@ -107,7 +107,7 @@
         "id": "Enrg",
         "precision": 1,
         "stackType": "regular",
-        "labelOffset": -5,
+        "labelOffset": -20,
         "totalText": "",
         "unit": "",
         "title": "{$msg_stat.kWh}"
@@ -121,7 +121,7 @@
         "strictMinMax": true,
         "color": "#00CC00",
         "gridColor": "#00CC00",
-        "labelOffset": -30,
+        "labelOffset": -20,
         "inside": false,
         "offset": 50,
         "title": "{$msg_stat.PFavg}",
@@ -135,7 +135,7 @@
         "color": "#9400D3",
         "gridColor": "#9400D3",
         "gridThickness": 0,
-        "labelOffset": 0,
+        "labelOffset": -20,
         "title": "{$msg_stat.PwrAVG} {$msg_stat.kW}",
         "titleColor": "#9400D3"
     }

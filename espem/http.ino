@@ -129,3 +129,23 @@ void wsamples() {
   server.sendContent(""); // send empty chunk and notify the client that there will be no more data
   server.client().stop(); // Force connection close 'cause the were no content length header
 }
+
+
+// return json with espem status
+void wver() {
+
+  char buff[150];
+  char* espmver = (char*) malloc(strlen_P(PGver)+1);
+  strcpy_P(espmver, PGver);
+
+  snprintf_P(buff, sizeof(buff), PGverjson,
+		ESP.getChipId(),
+		ESP.getFlashChipSize(),
+		system_get_sdk_version(),
+		espmver,
+		ESP.getCpuFreqMHz(),
+		ESP.getFreeHeap(),
+		NTP.getUptime() );
+
+  server.send(200, FPSTR(PGmimejson), buff );
+}

@@ -16,6 +16,10 @@ const char PROGMEM PGota[] = "OTA update in progress...";
 // sprintf template for json config data
 const char PROGMEM PGcfgjson[] = "{\"wH\":\"%s\",\"wM\":%u,\"wS\":\"%s\",\"pf\":[\"%u\"],\"pM\":[\"%u\"],\"pP\":%u,\"uU\":\"%s\"}";
 
+// sprintf template for json version data
+const char PROGMEM PGverjson[] = "{\"ChipID\":\"%x\",\"FlashSize\":%u,\"SDK\":\"%s\",\"espem\":\"%s\",\"CPUclk\":%u,\"Heap\":%u,\"Uptime\":%i,}";
+
+
 // Index page with config form
 // (this is a minimized version)
 const char PGindex[] PROGMEM = R"===(

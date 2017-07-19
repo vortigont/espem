@@ -74,7 +74,7 @@ void setup() {
   server.onNotFound( [](){server.send_P(200, PGmimehtml, PGindex);});  //return index for non-ex pages
   server.on("/getpmdata",  wpmdata);		// text-formatted data-output (Cacti like)
   server.on("/ota",        wota);		// OTA firmware update
-  server.on("/ver",    [](){server.send_P(200, PGmimetxt, PGver);});	// FW version
+  server.on("/ver",        wver);               // version and status info
   server.on("/samples",    wsamples);		// json with sampled meter data
   server.on("/cfg", HTTP_GET,  wcfgget);	// get config (json)
   server.on("/cfg", HTTP_POST, wcfgset);	// set config (json)

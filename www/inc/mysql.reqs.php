@@ -25,7 +25,7 @@ FROM
         ROUND(AVG(P)/1000,2) AS `AvgP`,
         ROUND(100*AVG(p/(U*I))) as `AvgpF`
         FROM data
-        WHERE devid='$devid' AND dtime>CURDATE() - INTERVAL 1 YEAR
+        WHERE devid='$devid' AND dtime>LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
         GROUP by MONTH(dtime)
         ORDER by dtime DESC
      ) allday
@@ -42,7 +42,7 @@ LEFT JOIN
             AVG(P) AS `P`,
             AVG(p/(U*I)) as `AvgpF`
         FROM data
-            WHERE devid='$devid' AND HOUR(dtime) BETWEEN $dtsh AND $dteh AND dtime>CURDATE() - INTERVAL 1 YEAR
+            WHERE devid='$devid' AND HOUR(dtime) BETWEEN $dtsh AND $dteh AND dtime>LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
             GROUP by DATE(dtime)
         ) perday
      GROUP by perday.Month
@@ -100,7 +100,7 @@ WHERE devid='$devid'
 ORDER BY dtime DESC
 LIMIT 1";
 
-//-- Meters meter
+//-- Meters list
 $sql['devlist'] =
 "SELECT * FROM meters ORDER BY name";
 

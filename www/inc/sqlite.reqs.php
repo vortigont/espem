@@ -2,7 +2,7 @@
 // SQLite reqs
 
 // Select year stat (last 12 month)
-$sql['sqlite']['ystat'] = <<<SQL
+$sql['sqlite']['mstat'] = <<<SQL
 SELECT
     allday.date AS 'date',
     allday.Energy AS Energy,
@@ -45,7 +45,7 @@ SQL
 
 // -- Select monthly stat (last 12 month)
 // -- kW
-$sql['sqlite']['mstat'] = <<<SQL
+$sql['sqlite']['ystat'] = <<<SQL
 SELECT
     allday.Month AS 'Month',
     allday.Energy AS Energy,
@@ -67,7 +67,7 @@ FROM
         ROUND(AVG(P)/1000,2) AS `AvgP`,
         ROUND(100*AVG(p/(U*I))) as `AvgpF`
         FROM data
-        WHERE devid='$devid' AND DATETIME(dtime, 'localtime') > DATE('now', 'start of month', '-1 YEAR', 'localtime')
+        WHERE devid='$devid' AND DATETIME(dtime, 'localtime') > DATE('now', '-1 YEAR', 'start of month', '1 months',   'localtime')
         GROUP by strftime('%m', dtime, 'localtime')
         ORDER by dtime DESC
      ) allday
@@ -86,7 +86,7 @@ LEFT JOIN
         FROM data
             WHERE devid='$devid'
                 AND cast(strftime('%H', dtime, 'localtime') as int) >= $dtsh AND cast( strftime('%H', dtime, 'localtime') as int) <= $dteh
-                AND DATETIME(dtime, 'localtime') > DATE('now', 'start of month', '-1 YEAR', 'localtime')
+                AND DATETIME(dtime, 'localtime') > DATE('now', '-1 YEAR', 'start of month', '1 months',   'localtime')
             GROUP by DATE(dtime)
         ) perday
      GROUP by perday.Month

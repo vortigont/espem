@@ -11,10 +11,10 @@ $default_meter = 'esp-pzem01';
 // DB engine (either 'sqlite' or 'mysql')
 $dbengine='mysql';
 
-#path to SQLite DB file
+// path to SQLite DB file
 $sqlitedb = '/var/db/pzem/pzem.sqlite';
 
-#MySQL DB settings
+// MySQL DB settings
 $dbhost    = 'localhost';
 $dbport    = '3306';
 $dbuser    = 'pzemstat';
@@ -24,18 +24,32 @@ $datatable = 'data';
 
 ## Default values
 
-# Default meter device_id
+// Default meter device_id
 $devid=1;
 
-# Default powermeter hostname/ip-address
+// Default powermeter hostname/ip-address
 $meterhost = 'esp-pzem01';
 
-# Daytime start hour (in 24h format)
+// Daytime start hour (in 24h format)
 $dtsh = 7;     // starting from 7:00:00
 
-# Daytime end hour
+// Daytime end hour
 $dteh = 22;      // up to 22:59:59)
+
+###
+# pzem_poller specific settings
+
+// enable data logging to text file
+$log_enable=false;
+
+// enable data logging to SQL DB
+$db_enable=false;
+
+// number of HTTP retries
+$retries=2;
+
 
 
 ini_set('display_errors', 0);
+ini_set('log_errors', 1);
 ?>

@@ -1,6 +1,6 @@
 <?php
 #
-# PZEM power-meter http poller for cacti
+# PZEM power-meter http poller for cacti/SQL DB data collection
 #
 # polls data via ESP-board's web server connected to PZEM power-meter
 #
@@ -8,41 +8,13 @@
 #
 
 #
-# Usage: pzem.php <host> [port] [url] [meter_id]
+# Usage: pzem_poller.php <host> [port] [url] [meter_id]
+# e.x. pzem_poller.php mymeter.example.com 80 getpmdata 10
 #
 
+# include configuration
+require_once( 'config.php' );
 
-### Set some vars
-# log to text file
-$log_enable=false;
-# log to SQL DB
-$db_enable=false;
-
-# num of HTTP retries
-$retries=2;
-
-# defailt meter id
-$meter_id = '1';
-
-# path to a text log file
-$logfile = '/var/log/pmeter/meter.log';
-
-#DB engine (either 'sqlite' or 'mysql')
-$dbengine='mysql';
-
-#path to SQLite DB file
-$sqlitedb = '/var/db/pzem/pzem.sqlite';
-
-#MySQL DB settings
-$dbhost	   = 'localhost';
-$username  = 'pzemw';
-$password  = 'pzemwriter';
-$dbname    = 'pzem';
-$datatable = 'data';
-
-
-ini_set('display_errors', 0);
-ini_set('log_errors', 1);
 //ini_set('error_reporting', 1);
 
 
@@ -50,7 +22,7 @@ ini_set('log_errors', 1);
 isset($argv[1]) ? $host = $argv[1] : die('Error: <hostname> parameter required');
 isset($argv[2]) ? $port = $argv[2] : $port = '80';
 isset($argv[3]) ? $path = $argv[3] : $path = 'getpmdata';
-isset($argv[4]) ? $meter_id =$argv[4] : $meter_id = '1';
+isset($argv[4]) ? $devid =$argv[4];
 
 
 $url = 'http://' . $host . ":" . $port . '/' . $path;
@@ -77,7 +49,7 @@ if ($httpcode != 200){
     die("HTTP_error: $httpcode\n");
 }
 
-#chop trailing zeroes (cacti don't like it)
+#chop trailing zeroes (cacti doesn't like it)
 $data = str_replace('.00', '', $response);
 
 
@@ -102,7 +74,7 @@ foreach ($datavals as $item) {
     if (!is_numeric($value) || $value<0 ){ die("Val is out of range: $value\n"); }
     $meters[$key]=$value;
 }
-$meters['devid']=$meter_id;
+$meters['devid']=$devid;
 
 
 $pdoopt = [
@@ -115,7 +87,7 @@ $pdoopt = [
     switch ($dbengine) {
 	case 'mysql':
 	    $dsn = "mysql:host=$dbhost;dbname=$dbname;charset=utf8";
-	    $pdo = new PDO($dsn, $username, $password, $pdoopt);
+	    $pdo = new PDO($dsn, $dbuser, $dbpass, $pdoopt);
 	    break;
     default:
 	$pdo = new PDO("sqlite:$sqlitedb", null, null, $pdoopt);

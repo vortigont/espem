@@ -141,6 +141,7 @@ void wver() {
   snprintf_P(buff, sizeof(buff), PGverjson,
 		ESP.getChipId(),
 		ESP.getFlashChipSize(),
+		ESP.getCoreVersion().c_str(),
 		system_get_sdk_version(),
 		espmver,
 		ESP.getCpuFreqMHz(),
@@ -149,3 +150,6 @@ void wver() {
 
   server.send(200, FPSTR(PGmimejson), buff );
 }
+
+
+

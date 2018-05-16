@@ -2,7 +2,7 @@
  *  A code for ESP8266 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
  *
- *  (c) Emil Muratov 2017
+ *  (c) Emil Muratov 2018
  *
  */
 
@@ -13,16 +13,19 @@
 // HTTP related def's
 #include "http.h"
 
+#ifdef ESP8266
+extern "C" {
+#include "user_interface.h"
+}
+#endif
+
 #include <ESP8266WiFi.h>
 #include <ESP8266WebServer.h>
 // OTA Updates
 #include <ESP8266HTTPClient.h>
 #include <ESP8266httpUpdate.h>
 
-//#include <SoftwareSerial.h> // Must be a special lib for ESP!	https://github.com/plerup/espsoftwareserial
 #include <PZEM004T.h>		// Peacefair PZEM-004T Energy monitor https://github.com/vortigont/PZEM004T
-				// a forked version of oleh's lib with a fix for esp platform
-				// (should switch back if merged to oleh's master https://github.com/olehs/PZEM004T)
 
 #include <SimpleTimer.h>     	// Simple timers        https://github.com/jfturcot/SimpleTimer
 

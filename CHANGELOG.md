@@ -1,8 +1,24 @@
 # Change Log
 
+Added:
+    poller: merge with www
+      - poller script now resides along with other www scripts
+      - Merged poller's script config with www's config.php
+
+    FW: add ESP Core version output to http /ver responce
+
+Fixed:
+ - Current month stat calculation fixed for more than 1 year stat
+
+Changed:
+    platformio:
+     - pio environments for different ESP core's (stable/stage/core_2.3.x)
+     - build options reducing FW size
+        - add script to strip newlib floats and reduce fw size
+          (https://github.com/arendst/Sonoff-Tasmota/commit/f60c570eaccc3b0f993bf220c58f54b39e1f0419)
+        - add flags to remove DEBUG/GLOBAL_HWSERIAL for stable env
+
 Known issues:
- - project may not build on platformio due to broken manifest file. WA: use stage version of arduinoespressif8266
-   or fix 'platform' in manifest file for EspSoftwareserial lib
 
 
 ## v 1.1.0 (2017-07-19)

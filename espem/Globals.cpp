@@ -46,8 +46,9 @@ Globals::Globals()
     // initialize power data pointers
     ::memset(&m_fMeterings, 0, sizeof(float)*METERING_SIZE);
 #if USE_HWSERIAL
-    m_pHWSer = new HardwareSerial(HWSERIAL_PORT);
-    m_pzem = new PZEM004T(&hwser);  // Connect to PZEM via HW_serial
+    //m_pHWSer = new HardwareSerial(HWSERIAL_PORT);
+	HardwareSerial m_pHWSer(HWSERIAL_PORT);
+    m_pzem = new PZEM004T(&m_pHWSer);  // Connect to PZEM via HW_serial
 #else
     m_pzem = new PZEM004T(PIN_RX, PIN_TX);  // Connect to PZEM via sw_serial pins
 #endif

@@ -13,6 +13,8 @@ No need for cloud services, just a raspberry/orangepy running web-server with sq
 
 ![espem sampled data](https://github.com/vortigont/espem/raw/master/examples/webstat/sampleschart01.th.png)
 
+### Monthly stats table
+![espem stats table](https://github.com/vortigont/espem/raw/master/examples/webstat/stat_table2.png)
 
 ### TODO:
 Write docs

@@ -28,7 +28,7 @@ void setup()
     // fill the struct with pointers
 
 #if HWSERIAL_SWAP
-    hwser.swap(); //swap hw_serial pins to gpio13(rx),15(tx)
+	global.m_pHWSer->swap(); //swap hw_serial pins to gpio13(rx),15(tx)
 #endif
 
     // start hw serial for debugging

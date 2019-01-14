@@ -85,10 +85,12 @@ public:
     static  void    SerialPrint(const char* szToPrint);
     static  void    SerialPrintln(const char* szToPrint);
     static  void    SerialBegin(unsigned long baud);
-private:
+
 #if USE_HWSERIAL
     HardwareSerial* m_pHWSer;   // hardware serial port
 #endif
+
+private:
     PZEM004T* m_pzem;
     IPAddress*  m_pIp;  // IP address
 

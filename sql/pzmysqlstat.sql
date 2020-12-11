@@ -38,7 +38,7 @@ SELECT
 FROM data m1
 WHERE devid='1'
 GROUP by DATE(m1.dtime)
-ORDER by dtime DESC
+ORDER by DATE(dtime) DESC
 LIMIT 30;
 */
 
@@ -108,9 +108,9 @@ FROM
         ROUND(AVG(P)/1000,2) AS `AvgP`,
 	ROUND(100*AVG(p/(U*I))) as `AvgpF`
         FROM data
-	WHERE devid='1' AND dtime>CURDATE() - INTERVAL 1 YEAR
-        GROUP by MONTH(dtime)
-	ORDER by dtime DESC
+	WHERE devid='1' AND dtime > LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
+        GROUP by MONTHNAME(dtime)
+	ORDER by MONTHNAME(dtime) DESC
      ) allday
 LEFT JOIN
     ( SELECT
@@ -120,13 +120,13 @@ LEFT JOIN
       ROUND(100*AVG(perday.AvgpF)) as `AvgpF`
       FROM (
         SELECT
-	    MONTHNAME(dtime) AS 'Month',
-	    ROUND( (MAX(W) - MIN(W))/1000,2 ) AS Energy,
-    	    AVG(P) AS `P`,
-	    AVG(p/(U*I)) as `AvgpF`
+		  MONTHNAME(dtime) AS 'Month',
+		  ROUND( (MAX(W) - MIN(W))/1000,2 ) AS Energy,
+    	  AVG(P) AS `P`,
+	  	  AVG(p/(U*I)) as `AvgpF`
         FROM data
-	    WHERE devid='1' AND HOUR(dtime) BETWEEN 7 AND 22 AND dtime>CURDATE() - INTERVAL 1 YEAR
-	    GROUP by DATE(dtime)
+	    WHERE devid='1' AND HOUR(dtime) BETWEEN 7 AND 22 AND dtime > LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
+	    GROUP by DATE(dtime),MONTHNAME(dtime)
         ) perday
      GROUP by perday.Month
     ) dayt
@@ -152,12 +152,12 @@ FROM
 	MONTHNAME(dtime) AS 'Month',
 	MAX(W) - MIN(W) AS Energy,
 	(MAX(W) - MIN(W))/ DATEDIFF(MAX(dtime),MIN(dtime)) AS AEpD,
-        MAX(P) AS `MaxP`,
-        AVG(P) AS `AvgP`,
+	MAX(P) AS `MaxP`,
+	AVG(P) AS `AvgP`,
 	ROUND(100*AVG(p/(U*I)),1) as `AvgpF`
         FROM data
-	WHERE dtime>CURDATE() - INTERVAL 1 YEAR
-        GROUP by MONTH(dtime)
+	WHERE dtime>LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
+        GROUP by MONTHNAME(dtime)
      ) allday
 LEFT JOIN
     ( SELECT
@@ -172,8 +172,8 @@ LEFT JOIN
     	    AVG(P) AS `P`,
 	    AVG(p/(U*I)) as `AvgpF`
         FROM data
-	    WHERE HOUR(dtime) BETWEEN 7 AND 22 AND dtime>CURDATE() - INTERVAL 1 YEAR
-	    GROUP by DATE(dtime)
+	    WHERE HOUR(dtime) BETWEEN 7 AND 22 AND dtime>LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
+	    GROUP by DATE(dtime),MONTHNAME(dtime)
         ) perday
      GROUP by perday.Month
     ) dayt
@@ -186,11 +186,12 @@ ORDER by Month DESC;
 SELECT
     DATE(dtime) AS 'date',
     MAX(W) - MIN(W) AS Energy
-FROM data m1
-WHERE m1.dtime>CURDATE() - INTERVAL 1 WEEK
+FROM
+  data m1
+WHERE
+  m1.dtime>CURDATE() - INTERVAL 1 WEEK
 -- AND
 --    HOUR(m1.dtime) BETWEEN 7 AND 22
 GROUP by DATE(m1.dtime)
-ORDER by dtime DESC;
-
+ORDER by DATE(dtime) DESC;
 */

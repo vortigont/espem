@@ -20,14 +20,14 @@ FROM
     ( SELECT
         MONTHNAME(dtime) AS 'Month',
         ROUND( (MAX(W) - MIN(W))/1000, 2 ) AS Energy,
-        ROUND((MAX(W) - MIN(W))/ (DATEDIFF(MAX(dtime),MIN(dtime))+1)/1000, 2 ) AS AEpD,
-        ROUND(MAX(P)/1000,2) AS `MaxP`,
-        ROUND(AVG(P)/1000,2) AS `AvgP`,
-        ROUND(100*AVG(p/(U*I))) as `AvgpF`
-        FROM data
-        WHERE devid='$devid' AND dtime>LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
-        GROUP by MONTH(dtime)
-        ORDER by dtime DESC
+      	ROUND((MAX(W) - MIN(W))/ (DATEDIFF(MAX(dtime),MIN(dtime))+1)/1000, 2 ) AS AEpD,
+      	ROUND(MAX(P)/1000,2) AS `MaxP`,
+      	ROUND(AVG(P)/1000,2) AS `AvgP`,
+      	ROUND(100*AVG(p/(U*I))) as `AvgpF`
+      FROM data
+      WHERE devid='$devid' AND dtime > LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
+      GROUP by MONTHNAME(dtime)
+      ORDER by MONTHNAME(dtime) DESC
      ) allday
 LEFT JOIN
     ( SELECT
@@ -42,8 +42,8 @@ LEFT JOIN
             AVG(P) AS `P`,
             AVG(p/(U*I)) as `AvgpF`
         FROM data
-            WHERE devid='$devid' AND HOUR(dtime) BETWEEN $dtsh AND $dteh AND dtime>LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
-            GROUP by DATE(dtime)
+            WHERE devid='$devid' AND HOUR(dtime) BETWEEN $dtsh AND $dteh AND dtime > LAST_DAY(CURDATE() - INTERVAL 1 YEAR) + INTERVAL 1 DAY
+            GROUP by DATE(dtime),MONTHNAME(dtime)
         ) perday
      GROUP by perday.Month
     ) dayt

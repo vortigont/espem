@@ -181,4 +181,6 @@ class NullSerialClass // a do-nothing class to replace Serial
  void flush() {}
 } NullSerial;
 #define Serial NullSerial
+#else
+#define Serial DEBUG
 #endif

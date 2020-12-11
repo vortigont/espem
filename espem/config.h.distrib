@@ -7,8 +7,11 @@
 // 	NodeMCU - Wemos, NodeMCU, any other...
 #define BOARD_NodeMCU
 
-// Enable debug messages via hw serail port0
-#define DEBUG false
+// Debuging messages via hw serail
+                             // undefined - disabled (default)
+//#define DEBUG Serial       // output via hwserial0
+//#define DEBUG Serial1      // output via hwserial1  TX pin is GPIO2
+
 
 // Use HW serial pins to connect to PZEM
 // see notes below
@@ -21,7 +24,7 @@
 // Use either UART1 pin for debug or software serial for pzem connection on any other GPIO's available
 // for details, see http://esp8266.github.io/Arduino/versions/2.1.0-rc2/doc/reference.html#serial
 
-// Swap hw_serial from default gpio1,3 to gpio13,15
+// Swap hw_serial from default gpio1,3 to gpio13(tx),gpio15(rx)
 // Note: gpio15 must be pulled low on esp start, otherwise it won't boot from eeprom
 // Pzem pulls it's RX pin high via optocoupler's led, so make sure to workaround it anyhow
 #define HWSERIAL_SWAP false

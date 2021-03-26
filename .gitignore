@@ -1,9 +1,12 @@
-config.h
-config.*.h_
-trash.txt
-*.bin
-*.orig
+.pio
 .pioenvs
 .piolibdeps
+.vscode
+config.h
+config.*.h_
+*.bin
+*.orig
 .clang_complete
 .gcc-flags.json
+user_*.ini
+resources/etags.txt

@@ -1,0 +1,12 @@
+.graph {
+    margin: auto;
+    width: 80%;
+    padding: 10px;
+    text-align: center;
+    background: black;
+    position:relative; display: flex; height: 200px;
+}
+
+.graphs {
+    position:relative; display: flex; height: 200px;
+}

@@ -1,17 +1,12 @@
 // Default options
 // rename this file to config.h and make your changes before building the sketch
 
-// Board type. May use some board specfic LED's and pins
-// available types:
-// 	WITTY   - WittyCloud board
-// 	NodeMCU - Wemos, NodeMCU, any other...
-#define BOARD_NodeMCU
+#pragma once
 
 // Debuging messages via hw serail
                              // undefined - disabled (default)
-//#define DEBUG Serial       // output via hwserial0
-//#define DEBUG Serial1      // output via hwserial1  TX pin is GPIO2
-
+//#define ESPEM_DEBUG Serial       // output via hwserial0
+//#define ESPEM_DEBUG Serial1      // output via hwserial1  TX pin is GPIO2
 
 // Use HW serial pins to connect to PZEM
 // see notes below
@@ -33,55 +28,10 @@
 // If 'USE_HWSERIAL=false' than use this GPIO pins for Software serial
 #define PIN_RX  5   // only pins 0-5,12-15 are allowed for RX,TX on ESP
 #define PIN_TX  4   // 5, 4 is D1,D2 on NodeMCU board
+                    // Lolin
+                    // RX D7   GPIO 13
+                    // TX D8   GPIO15
 
-// WiFi self AP-mode default SSID
-// will be defined automaticaly as "ESPEM_[ChipID]"
-
-// WiFi self AP-mode default password (15 chars max)
-#define WIFI_PASSWD "PowerMeter"
-
-
-// NTP Options
-#define NTP_SERVER  "ru.pool.ntp.org"
-#define NTP_INTERVAL  21777
-
-// TimeZone offset in hours
-// Note: Do NOT set this to values other than zero unless you realy need it to!
-// It affects now() function and timestamps for JS charts, so by default it uses
-// UTC timestamps and leaves js charts to take care of the locale TimeZone
-#define TZ 0
-// daylight saving
-#define TZ_DL false
-
-
-// OTA update URL (80 chars max)
-#define OTA_url "http://example.org/espem/espem.bin"
-#define OTA_ver PMeterESP_VER
-
-// Power factor correction
-// Sometimes pmeter returns current value much lower than it
-// should be according to the Power/Voltage relation.
-// This results in Power Factor calculation being greater than '1'.
-// The cause maybe a poll timing lag between I and P or maybe other integration errors (needs detailed investigation)
-// As a WA this option enables 'I' value correction if pF is greater than 1.1
-#define PF_CORRECTION true
-
-// Poll mode
-// Enables periodical PowerMeter polling for data
-// If set to 'false' than p-meter polled for data only when requested from outside
-#define POLL_MODE true
-
-// Pool period for above (in seconds)
-// must be no less than 2 seconds for stable operations
-#define POLL_PERIOD 10
-
-// Number of polling samples to save in RAM ring-buffer
-// Enables JSON-data provider for run-time sampling charts
-// Beware of RAM usage! It takes 12 bytes of RAM for each sample!
-// Data sampling works only if POLL_MODE=true (to be fixed)
-// To disable this feature and free RAM buffer set this option to '0'
-#define POLL_SAMPLES 512
-
-// program version of some kind
-// maybe used later in OTA updates
-#define PMeterESP_VER "espem_1.0.2"
+// Default NTP TimeZone and country (optional)
+//#define TZONE TZ_Europe_Moscow  // Zones defined in cores/esp8266/TZ.h
+//#define COUNTRY "ru"            // Country double-letter code

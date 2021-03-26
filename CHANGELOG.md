@@ -1,5 +1,9 @@
 # Change Log
 
+## 1.x (2021-03-21)
+
+Obsolete 1.x branch
+
 Added:
     poller: merge with www
       - poller script now resides along with other www scripts

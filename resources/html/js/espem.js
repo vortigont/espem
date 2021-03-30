@@ -1,28 +1,53 @@
+// raw data coming from the EmbUI handled here
 function rawdata_cb(obj) {
-    console.log('Got my raw data:', obj);
     var frame = obj.block;
     if (!obj.block){
         console.log('Message has no data block!');
         return;
     }
 
+    var U, I, P, W, pF;
     for (var i = 0; i < frame.length; i++) if (typeof frame[i] == "object") {
         if (frame[i].id === "U"){
-            var element = document.getElementById("gaugeV");
+            //var element = document.getElementById("gaugeV");
             GVchart.arrows[0].setValue(frame[i].value);
             GVchart.axes[0].setTopText(frame[i].value.toFixed(0) + ' Volts');
+            U = frame[i].value;
         }
         if (frame[i].id === "Pf"){
-            var element = document.getElementById("gaugePF");
+            //var element = document.getElementById("gaugePF");
             GPFchart.arrows[0].setValue(frame[i].value * 100);
             GPFchart.axes[0].setTopText('PF ' + (frame[i].value * 100).toFixed(0) + '%');
             GPFchart.axes[0].bands[0].setEndValue(frame[i].value * 100);
             GPFchart.axes[0].bands[1].setStartValue(frame[i].value * 100);
+            frame[i].value = (frame[i].value).toFixed(2);
+            pF = frame[i].value;
+        }
+        if (frame[i].id === "I"){ I = frame[i].value; } 
+        if (frame[i].id === "P"){ P = frame[i].value; }
+        if (frame[i].id === "W"){ W = frame[i].value; }
+
+        if (frame[i].id === "scntr" && Gsminichart){
+            AmCharts.loadFile("http://" + location.host + "/samples.json?scntr=" + frame[i].value, {async: false}, function(data) {
+                Gsminichart.dataProvider = AmCharts.parseJSON(data);
+              }
+            );
+            Gsminichart.validateData();
+            return;
         }
 
         // requred for left-menu renderer
         frame[i].html = true;
     }
+
+    // skip if there is no Voltage data
+    if (!U)
+        return;
+
+    // Power metrics graph
+    Gsminichart.dataProvider.shift();
+    Gsminichart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": pF } );
+    Gsminichart.validateData();
 
     // pass data to the renderer to make it available under Menu area
     rdr.value(obj);
@@ -32,6 +57,7 @@ var GVchart = null;
 var GPFchart = null;
 var Gsminichart = null;
 
+
 function mkchart(id, param){
     var element = document.getElementById(id);
 
@@ -39,8 +65,11 @@ function mkchart(id, param){
         console.log('Element with id', id, ' not found!');
         return
     }
-    console.log('Attempt to build el id', id);
+    console.log('Building chart id:', id);
 
+    //"dataLoader": { "url" : "http://"+location.host+"/samples.json", "reload": 20},
+    //"dataProvider": loadminichartData(),
+                
     switch (id) {
         case "gaugeV" : GVchart = AmCharts.makeChart(element, {
             "type": "gauge",
@@ -104,7 +133,8 @@ function mkchart(id, param){
                 "allLabels": [], "balloon": {}, "titles": []
             });
                     console.log('Created chart ', element);
-                    break;
+            break;
+
         case "gaugePF" :
             GPFchart = AmCharts.makeChart(element, {
                 "type": "gauge",
@@ -181,18 +211,40 @@ function mkchart(id, param){
 
         case "gsmini" : Gsminichart = AmCharts.makeChart(element, {
                 "type": "serial",
-                "dataLoader": { "url" : "http://"+location.host+"/samples.json", "reload": 15},
                 "categoryField": "t",
                 "sequencedAnimation": false,
                 "backgroundColor": "#000000",
                 "borderColor": "#111111",
                 "theme": "black",
-                "creditsPosition": "bottom-right",
-                "categoryAxis": {
-                "gridPosition": "start",
-                "minPeriod": "ss",
-                "parseDates": true
+                "creditsPosition": "top-right",
+                "dataLoader": {
+                    "url" : "http://" + location.host + "/samples.json?scntr=" + param,
+                    "showErrors": false,
+                    "load": function( options, Gsminichart ) {
+                            var pwrGraph = new AmCharts.AmGraph();
+                            pwrGraph.valueField = "P";
+                            pwrGraph.type = "step";
+                            pwrGraph.title = "Power";
+                            pwrGraph.lineColor = "#FF0000";
+                            pwrGraph.lineThickness = 2;
+                            Gsminichart.addGraph( pwrGraph );
+
+                            var pfGraph = new AmCharts.AmGraph();
+                            pfGraph.valueField = "pF";
+                            pfGraph.type = "smoothedLine";
+                            pfGraph.valueAxis = "vaPF";
+                            pfGraph.type = "step";
+                            pfGraph.title = "Power";
+                            pfGraph.lineColor = "#12DE12";
+                            pfGraph.lineThickness = 2;
+                            Gsminichart.addGraph( pfGraph );
+                    },
                 },
+                "categoryAxis": {
+                    "gridPosition": "start",
+                    "minPeriod": "ss",
+                    "parseDates": true},
+/*
                 "graphs": [
                 {
                     "id": "gPWR",
@@ -213,10 +265,12 @@ function mkchart(id, param){
                     "valueField": "pF"
                 }
                 ],
+*/
                 "valueAxes": [
                 {
                     "id": "vaP",
                     "unit": "W",
+                    "position": "right",
                     "axisColor": "#FF0000",
                     "axisThickness": 2,
                     "color": "#FF0000",
@@ -226,7 +280,7 @@ function mkchart(id, param){
                     "id": "vaPF",
                     "maximum": 1,
                     "minimum": 0,
-                    "position": "right",
+                    "position": "left",
                     "strictMinMax": true,
                     "color": "#23EF23"
                 }
@@ -237,11 +291,9 @@ function mkchart(id, param){
                 "export": {
                 "enabled": false
                 } });
-            
-                //Gsminichart.dataLoader.url = "http://"+location.host+"/samples";
+                console.log("created gsmini"); // this will output an array
 
         default :
     }
 
 }
-  

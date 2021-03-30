@@ -15,16 +15,26 @@
  */
 enum CD : uint8_t {
     ESPEMInf = (0U),
-    ESPEMSet
+    ESPEMSet,
+    MScale,
+    Voltage,
+    PowerF
 };
 
 
 // Infoclock - English Strings (order does not matther)
 // ИнфоЧасики - Русские тексты (порядок значения не имеет)
-static const char T_EN_ESPEM[] PROGMEM = "Dashboard";
-static const char T_RU_ESPEM[] PROGMEM = "Индикаторы";
+static const char T_EN_ESPEM[] PROGMEM = "ESPEM Dashboard";
+static const char T_RU_ESPEM[] PROGMEM = "ESPEM Индикаторы";
 static const char T_EN_ESPEMSet[] PROGMEM = "ESPEM Setup";
 static const char T_RU_ESPEMSet[] PROGMEM = "ESPEM Параметры";
+static const char T_EN_MScale[] PROGMEM = "Metrics scale";
+static const char T_RU_MScale[] PROGMEM = "Масштаб выборки";
+static const char T_EN_Voltage[] PROGMEM = "Voltage meter";
+static const char T_RU_Voltage[] PROGMEM = "Напряжение";
+static const char T_EN_PowerF[] PROGMEM = "Power Factor";
+static const char T_RU_PowerF[] PROGMEM = "Коэффициент мощности";
+
 
 /**
  *  Dictionary with references to all text resources
@@ -38,9 +48,15 @@ static const char *const C_DICT[][UI_DICT_SIZE] PROGMEM = {
 // Index 0 - Russian lang
   { T_RU_ESPEM,
     T_RU_ESPEMSet,
+    T_RU_MScale,
+    T_RU_Voltage,
+    T_RU_PowerF
   },
 // Index 1 - English lang
   { T_EN_ESPEM,
     T_EN_ESPEMSet,
+    T_EN_MScale,
+    T_EN_Voltage,
+    T_EN_PowerF
   }
 };

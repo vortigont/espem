@@ -4,7 +4,8 @@
 
 // General
 static const char T_HEADLINE[] PROGMEM = "ESP Энергометр";    // имя проекта
-static const char C_ONE[] PROGMEM = "1";    // имя проекта
+static const char C_ONE[] PROGMEM = "1";
+static const char C_mkchart[] PROGMEM = "mkchart";
 
 //////////////////////
 // Configuration variables names  - V_ prefix for 'Variable'
@@ -14,16 +15,7 @@ static const char V_EPOLLENA[] PROGMEM = "dctlpoll";        // Enable/disable po
 static const char V_EPFFIX[] PROGMEM = "dctlpffix";         // PowerFactor value correction
 static const char V_EPOLLRT[] = "dctlpllrt";            // Metrics collector pollrate
 static const char V_ECOLLECTORSTATE[] = "dctlmtrx";	        // Metrics collector run/pause
-
-
-// Matrix control
-static const char V_MX_W[]  = "mx_w";	                // Matrix WIDTH (number of 8x8 MAX modules)
-static const char V_MX_H[]  = "mx_h";	                // Matrix HIIGHT (number of 8x8 MAX modules)
-static const char V_MX_VF[] = "mx_vf";	                // Canvas V-flip
-static const char V_MX_HF[] = "mx_hf";	                // Canvas H-flip
-static const char V_MX_OS[] = "mx_os";	                // Modules order - Serpentine
-static const char V_MX_OV[] = "mx_ov";	                // Modules order - Vertical
-static const char V_MX_MR[] = "mx_mr";	                // Module rotation
+static const char V_SMPLCNT[] = "dctlscnt";	                // Metrics graph - number of samples to draw in a small power chart
 
 
 // UI blocks    - B_ prefix for 'web Block'

@@ -27,10 +27,11 @@ void create_parameters(){
     /**
      * регистрируем свои переменные
      */
-    embui.var_create(FPSTR(V_EPOLLRT), ESPEM_POLLRATE);          // Metrics collector pollrate
-    embui.var_create(FPSTR(V_EPFFIX), true);                     // PowerFactor value correction
+    embui.var_create(FPSTR(V_EPOLLRT), ESPEM_POLLRATE);         // Metrics collector pollrate
+    embui.var_create(FPSTR(V_EPFFIX), true);                    // PowerFactor value correction
     embui.var_create(FPSTR(V_EPOLLENA), true);         	        // Meter poller active
-    embui.var_create(FPSTR(V_EPOOLSIZE), ESPEM_MEMPOOL);            // metrics collector mem pool size, KiB
+    embui.var_create(FPSTR(V_EPOOLSIZE), ESPEM_MEMPOOL);        // metrics collector mem pool size, KiB
+    embui.var_create(FPSTR(V_SMPLCNT), 0);                       // Metrics graph - number of samples to draw in a small power chart
 
     //Metrics collector run/pause
     embui.var_create(FPSTR(V_ECOLLECTORSTATE), 1);               // Collector state
@@ -117,7 +118,7 @@ void block_page_main(Interface *interf, JsonObject *data){
     interf->json_frame_interface();
     interf->json_section_main(FPSTR(B_ESPEM), FPSTR(C_DICT[lang][CD::ESPEMInf]));
 
-    interf->spacer(F("ESPEM Dashboard"));       // Page title
+    //interf->spacer(F("ESPEM Dashboard"));       // Page title
     interf->json_section_line();             // "Live controls"
 
     interf->checkbox(FPSTR(V_EPOLLENA), espem->meterPolling(), F("Meter Polling"), true);   // Meter poller status
@@ -127,18 +128,19 @@ void block_page_main(Interface *interf, JsonObject *data){
 
     DynamicJsonDocument doc(128);
     JsonObject params = doc.to<JsonObject>();
-    params[F("class")] = F("graph");
-    //params["w"] = "150";
-    //params["h"] = "150";
+    params[F("class")] = F("graphwide");    // css selector
 
-
-    interf->json_section_line();        // F("Metrics")
+    interf->json_section_line();
     // id, type, value, label, param
-    interf->custom(F("gaugeV"), F("div"), String("mkchart"), F("Voltage Meter"), params);
-    interf->custom(F("gaugePF"), F("div"), String("mkchart"), F("Power Factor"), params);
-    interf->json_section_end();     // end of main
+    interf->custom(F("gaugeV"), F("div"),  FPSTR(C_mkchart), FPSTR(C_DICT[lang][CD::Voltage]), params);   // Voltage gauge
+    interf->custom(F("gaugePF"), F("div"), FPSTR(C_mkchart), FPSTR(C_DICT[lang][CD::PowerF]), params);    // Power Factor
+    interf->json_section_end();     // end of line
 
-    interf->custom(F("gsmini"), F("div"), String("mkchart"), F("Power chart"), params);
+    params[F("arg1")] = embui.param(FPSTR(V_SMPLCNT));
+    interf->custom(F("gsmini"), F("div"), FPSTR(C_mkchart), F("Power chart"), params);
+
+    // slider for the amount of metric samples to be plotted on a chart
+    interf->range(FPSTR(V_SMPLCNT), embui.param(FPSTR(V_SMPLCNT)).toInt(), 0, espem->getMetricsCap(), 10, FPSTR(C_DICT[lang][CD::MScale]), true);
 
     interf->json_frame_flush();     // flush frame
 }
@@ -208,7 +210,7 @@ void pubCallback(Interface *interf){
 // Callback ACTIONS
 
 /**
- *  Apply matrix-related options 
+ *  Apply espem options values
  */
 void set_espem_opts(Interface *interf, JsonObject *data){
     if (!data) return;
@@ -264,5 +266,17 @@ void set_directctrls(Interface *interf, JsonObject *data){
             embui.var(_k, String((uint8_t)_a));
             LOG(printf_P, PSTR("UI: Changed Collector state to: %d\n"), espem->collector() );
         }
+
+        _s=FPSTR(V_SMPLCNT);
+        if (!_s.compareTo(_k)){
+            SETPARAM(FPSTR(V_SMPLCNT));
+
+            if (interf){
+                interf->json_frame_custom(F("rawdata"));
+                interf->value(F("scntr"), kv.value());
+            }
+        }
     }
+
+    interf->json_frame_flush();
 }

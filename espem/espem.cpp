@@ -38,6 +38,7 @@ bool ESPEM::begin(){
     wdatareply(request);
   });
 
+  // compat method for v 1.x cacti scripts
   embui.server.on(PSTR("/getpmdata"), HTTP_GET, [this](AsyncWebServerRequest *request){
     wpmdata(request);
   });
@@ -89,6 +90,7 @@ float ESPEM::pfcalc(const float result[]) {
 
 // pmdata web-page
 // Returns an http-response with Powermeter data from pdata struct
+// compat method for v 1.x cacti scripts
 void ESPEM::wpmdata(AsyncWebServerRequest *request) {
   if ( !meter ) {
     request->send(503, FPSTR(PGmimetxt), FPSTR(PGdre) );
@@ -131,20 +133,34 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
   // json response maybe pretty large and needs too much of a precious ram to store it in a temp 'string'
   // So I'm going to generate it on-the-fly and stream to client with chunks
 
-  size_t sampleIndex = 0;
+  size_t sampleIndex = 0;   // index pointer to keep track of chuncked data in replies
+  size_t  cnt = 0;    // cnt - return last 'cnt' samples, 0 - all samples
+
+  if (request->hasParam(F("scntr"))){
+    AsyncWebParameter* p = request->getParam(F("scntr"));
+    if (!p->value().isEmpty())
+      cnt = p->value().toInt();
+  }
 
   AsyncWebServerResponse* response = request->beginChunkedResponse(FPSTR(PGmimejson),
-                                  [this, sampleIndex](uint8_t* buffer, size_t maxLen, size_t index) mutable -> size_t {
+                                  [this, sampleIndex, cnt](uint8_t* buffer, size_t maxLen, size_t index) mutable -> size_t {
       size_t len = 0;
-      if (!sampleIndex){
-        buffer[0] = 0x5b;   // ASCII '['
-        ++len;
-      }
 
       const std::vector<pmeterData> *samples = metrics->getData();
 
+      // set number of samples to send in responce
+      if (!cnt || cnt > samples->capacity())
+        cnt = samples->capacity();
+
+      if (!sampleIndex){
+        buffer[0] = 0x5b;   // ASCII '['
+        ++len;
+        sampleIndex = samples->capacity() - cnt;
+      }
+
+
       time_t meter_time = embui.timeProcessor.getUnixTime() - (millis() - meter->getLastPollTime())/1000;  // find out timestamp for last sample
-      //size_t cnt = 0;
+
       // prepare a chunk of sampled data wrapped in json
       while (len < (maxLen - JSON_SMPL_LEN) && sampleIndex != samples->capacity()){
         size_t idx = (metrics->getMetricsIdx() + sampleIndex) % samples->capacity();
@@ -180,7 +196,7 @@ void ESPEM::wspublish(){
 
   Interface *interf = new Interface(&embui, &embui.ws, 512);
 
-  interf->json_frame_custom(String("rawdata"));
+  interf->json_frame_custom(F("rawdata"));
   interf->value(F("U"), meter->getData().voltage);
   interf->value(F("I"), meter->getData().current);
   interf->value(F("P"), meter->getData().power);

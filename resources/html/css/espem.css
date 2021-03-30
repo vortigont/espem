@@ -7,6 +7,15 @@
     position:relative; display: flex; height: 200px;
 }
 
+.graphwide {
+    margin: auto;
+    width: 100%;
+    padding: 10px;
+    text-align: center;
+    background: black;
+    position:relative; display: flex; height: 200px;
+}
+
 .graphs {
     position:relative; display: flex; height: 200px;
 }

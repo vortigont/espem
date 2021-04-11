@@ -9,8 +9,6 @@
 
 #define MAX_POLL_PERIOD 60
 
-//uint8_t lang = LANG::RU;   // default language for text resources
-
 extern ESPEM *espem;
 
 /**
@@ -55,6 +53,7 @@ void create_parameters(){
 
     // direct controls
     embui.section_handle_add(FPSTR(A_DIRECT_CTL),  set_directctrls);             // process checkboxes with direct updates
+
 }
 
 
@@ -74,7 +73,7 @@ void sync_parameters(){}
 void section_main_frame(Interface *interf, JsonObject *data){
     if (!interf) return;
 
-    interf->json_frame_interface(FPSTR(T_HEADLINE));    // HEADLINE for WebUI
+    interf->json_frame_interface(FPSTR(C_DICT[lang][CD::ESPEM_H]));    // HEADLINE for WebUI
     block_menu(interf, data);                           // Строим UI блок с меню выбора других секций
     interf->json_frame_flush();
 
@@ -94,10 +93,8 @@ void section_main_frame(Interface *interf, JsonObject *data){
 void block_menu(Interface *interf, JsonObject *data){
     if (!interf) return;
     // создаем меню
-    embui.autoSaveReset(); // автосохранение конфига будет отсчитываться от этого момента
     interf->json_section_menu();    // открываем секцию "меню"
-
-    interf->option(FPSTR(B_ESPEM),   FPSTR(C_DICT[lang][CD::ESPEMInf]));           // пункт меню "ESPEM Info"
+    interf->option(FPSTR(B_ESPEM),   FPSTR(C_DICT[lang][CD::ESPEM_DB]));           // пункт меню "ESPEM Info"
     interf->option(FPSTR(B_ESPEMSET), FPSTR(C_DICT[lang][CD::ESPEMSet]));         // пункт меню "ESPEM Setup"
 
     /**
@@ -116,9 +113,8 @@ void block_menu(Interface *interf, JsonObject *data){
 void block_page_main(Interface *interf, JsonObject *data){
     if (!interf) return;
     interf->json_frame_interface();
-    interf->json_section_main(FPSTR(B_ESPEM), FPSTR(C_DICT[lang][CD::ESPEMInf]));
+    interf->json_section_main(FPSTR(B_ESPEM), FPSTR(C_DICT[lang][CD::ESPEM_H]));
 
-    //interf->spacer(F("ESPEM Dashboard"));       // Page title
     interf->json_section_line();             // "Live controls"
 
     interf->checkbox(FPSTR(V_EPOLLENA), espem->meterPolling(), F("Meter Polling"), true);   // Meter poller status
@@ -140,7 +136,7 @@ void block_page_main(Interface *interf, JsonObject *data){
     interf->custom(F("gsmini"), F("div"), FPSTR(C_mkchart), F("Power chart"), params);
 
     // slider for the amount of metric samples to be plotted on a chart
-    interf->range(FPSTR(V_SMPLCNT), embui.param(FPSTR(V_SMPLCNT)).toInt(), 0, espem->getMetricsCap(), 10, FPSTR(C_DICT[lang][CD::MScale]), true);
+    interf->range(FPSTR(V_SMPLCNT), (int)embui.param(FPSTR(V_SMPLCNT)).toInt(), 0, (int)espem->getMetricsCap(), 10, FPSTR(C_DICT[lang][CD::MScale]), true);
 
     interf->json_frame_flush();     // flush frame
 }
@@ -177,7 +173,7 @@ void block_page_espemset(Interface *interf, JsonObject *data){
 
     interf->json_section_line(FPSTR(A_SET_ESPEM));
     //interf->text(FPSTR(V_EPOOLSIZE), embui.param(FPSTR(V_EPOOLSIZE)), FPSTR(F("Metrics RAM pool size, KiB")), false);          // Memory pool for metrics data, KiB
-    interf->number(FPSTR(V_EPOOLSIZE), embui.param(FPSTR(V_EPOOLSIZE)).toInt(), FPSTR(F("Metrics RAM pool size, KiB")));          // Memory pool for metrics data, KiB
+    interf->number(FPSTR(V_EPOOLSIZE), FPSTR(F("Metrics RAM pool size, KiB")));          // Memory pool for metrics data, KiB
     // Button "Apply Metrics pool settings"
     interf->button_submit(FPSTR(A_SET_ESPEM), FPSTR(T_DICT[lang][TD::D_Apply]), F("blue"));
     interf->json_section_end();     // end of line

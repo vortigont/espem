@@ -63,6 +63,8 @@ void setup() {
   #endif
 
   //sync_parameters();    // sync UI params
+
+  embui.setPubInterval(20);
 }
 
 
@@ -70,25 +72,16 @@ void setup() {
 void loop() {
 
   embui.handle();
-//  ts.execute();           // run task scheduler
 
 #ifdef USE_FTP
     ftp_loop(); // цикл обработки событий фтп-сервера
 #endif
 }
 
-// reboot esp task
-void espreboot() {
-  Task *t = new Task(0, TASK_ONCE, [](){ESP.restart();}, &ts, false);
-  t->enableDelayed(UPD_RESTART_DELAY * TASK_SECOND);
-}
-
-
 // send HTTP responce, json with controller/fw versions and status info
 void wver(AsyncWebServerRequest *request) {
   char buff[HTTP_VER_BUFSIZE];
-  //char* firmware = (char*) malloc(strlen_P(PGver)+1);
-  //strcpy_P(firmware, PGver);
+
   timespec tp;
   clock_gettime(0, &tp);
 

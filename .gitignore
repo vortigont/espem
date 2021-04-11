@@ -3,7 +3,7 @@
 .piolibdeps
 .vscode
 config.h
-config.*.h_
+user_config.h
 *.bin
 *.orig
 .clang_complete

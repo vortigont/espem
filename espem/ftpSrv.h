@@ -11,7 +11,7 @@
  #define LittleFS LITTLEFS
 #endif
 
-#define FTP_DEBUG
+//#define FTP_DEBUG
 
 #include <FTPServer.h>
 

@@ -3,7 +3,6 @@
 // Set of flash-strings that might be reused multiple times within the code
 
 // General
-static const char T_HEADLINE[] PROGMEM = "ESP Энергометр";    // имя проекта
 static const char C_ONE[] PROGMEM = "1";
 static const char C_mkchart[] PROGMEM = "mkchart";
 

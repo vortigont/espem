@@ -67,9 +67,6 @@ function mkchart(id, param){
     }
     console.log('Building chart id:', id);
 
-    //"dataLoader": { "url" : "http://"+location.host+"/samples.json", "reload": 20},
-    //"dataProvider": loadminichartData(),
-                
     switch (id) {
         case "gaugeV" : GVchart = AmCharts.makeChart(element, {
             "type": "gauge",

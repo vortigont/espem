@@ -3,7 +3,7 @@
 # etag file
 tags=etags.txt
 # embui branch/tag name to fetch
-embuitag="vortigont"
+embuitag="main"
 
 refresh_styles=0
 refresh_js=0

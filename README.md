@@ -11,19 +11,19 @@ __[BUILD](/espem/BUILD.md) | [USAGE](/espem/USAGE.md) | [CHANGELOG](/CHANGELOG.m
 - metrics collector in memory pool
 - data/metrics export via json 
 
-### WebUI Dashboard
+### ESPEM WebUI Dashboard
 
-<img src="/examples/webstat/espemembui.png" alt="espem ui" width="50%"/>
+<img src="/examples/espemembui.png" alt="espem ui" width="50%"/>
 
-### WebUI Options
+### ESPEM WebUI Options
 
-<img src="/examples/webstat/espemembui_setup.png" alt="espem opts" width="50%"/>
+<img src="/examples/espemembui_setup.png" alt="espem opts" width="50%"/>
 
 ### Additional tools
 Under /www there is a set of php/sql scripts that could be hosted undel LAMP to gather and calculate stats over long-term periods. Little bit outdated but still usable.
 No need for any cloud services, spyware etc... just a raspberry/orangepi running web-server with sqlite/mysql DB. It's possible to collect data from any number of PZEM monitors and store it in the DB for a long-term stats or get a PowerChart sampled data from the espem itself.
 
-### An example of daily stat dashboard
+### An example of exernal daily stats dashboard
 
 ![espem gauges](/examples/webstat/gauges.th.png)
 

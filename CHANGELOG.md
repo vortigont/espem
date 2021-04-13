@@ -1,5 +1,15 @@
 # Change Log
 
+## v 2.0.0 (2021-04-12)
+
+  Completely revorked project.
+    - UI switched to EmbUI framework
+    - embeded dashboard using websockets for real-time data updates
+    - most of the build-time defines moved to WebUI controls
+    
+
+## v 1.1.x Obsolete
+
 Added:
     poller: merge with www
       - poller script now resides along with other www scripts

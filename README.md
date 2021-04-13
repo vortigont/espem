@@ -1,7 +1,9 @@
 ## Energy monitor based on ESP8266 controller and Peacefair PZEM-004T Power Meter
 
 A code for ESP8266 controller and a set of web-tools to gather, analyse, monitor and view stat and graphs
-for Peacefair PZEM-004T PowerMeter.
+for [Peacefair](https://peacefair.aliexpress.com/store/1773456/) PZEM-004T PowerMeter.
+
+__[BUILD](/espem/BUILD.md) | [USAGE](/espem/USAGE.md) | [CHANGELOG](/CHANGELOG.md)__
 
 ## Features
 - WebUI via self-hosted HTTP/WebSocket server
@@ -11,24 +13,24 @@ for Peacefair PZEM-004T PowerMeter.
 
 ### WebUI Dashboard
 
-![espem ui](https://github.com/vortigont/espem/raw/master/examples/webstat/espemembui.png)
+<img src="/examples/webstat/espemembui.png" alt="espem ui" width="50%"/>
 
 ### WebUI Options
 
-![espem opts](https://github.com/vortigont/espem/raw/master/examples/webstat/espemembui_setup.png)
-
+<img src="/examples/webstat/espemembui_setup.png" alt="espem opts" width="50%"/>
 
 ### Additional tools
-A set of php/sql scripts to gather and calculate stats over long periods. No need for cloud services, just a raspberry/orangepy running web-server with sqlite/mysql DB. It's possible to collect data from any number of PZEM monitors and store it in the DB for a long-term stats or get a PowerChart sampled data from the espem itself.
+Under /www there is a set of php/sql scripts that could be hosted undel LAMP to gather and calculate stats over long-term periods. Little bit outdated but still usable.
+No need for any cloud services, spyware etc... just a raspberry/orangepi running web-server with sqlite/mysql DB. It's possible to collect data from any number of PZEM monitors and store it in the DB for a long-term stats or get a PowerChart sampled data from the espem itself.
 
 ### An example of daily stat dashboard
 
-![espem gauges](https://github.com/vortigont/espem/raw/master/examples/webstat/gauges.th.png)
+![espem gauges](/examples/webstat/gauges.th.png)
 
 
 ### Power chart with sampled data
 
-![espem sampled data](https://github.com/vortigont/espem/raw/master/examples/webstat/sampleschart01.th.png)
+![espem sampled data](/examples/webstat/sampleschart01.th.png)
 
 
 ### TODO:

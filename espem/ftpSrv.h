@@ -11,24 +11,25 @@
  #define LittleFS LITTLEFS
 #endif
 
-//#define FTP_DEBUG
+#ifndef FTP_USER
+ #define FTP_USER "ftp"
+#endif
+#ifndef FTP_PASSWORD
+ #define FTP_PASSWORD "ftp"
+#endif
 
+//#define FTP_DEBUG
 #include <FTPServer.h>
 
 FTPServer ftpSrv(LittleFS); // construct with LittleFS
 
 void ftp_setup(void){
- 
   /////FTP Setup, ensure LittleFS is started before ftp;  /////////
   if (LittleFS.begin()) {
-    ftpSrv.begin(F("ftp"), F("ftp")); //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
-  }   
+    ftpSrv.begin(F(FTP_USER), F(FTP_PASSWORD)); //username, password for ftp.  set ports in ESP8266FtpServer.h  (default 21, 50009 for PASV)
+  }
 }
 
 void ftp_loop(void){
   ftpSrv.handleFTP();        //make sure in loop you call handleFTP()!!  
 }
-
-//extern void ftp_setup(void);
-//extern void ftp_loop(void);
-//extern FTPServer ftpSrv; 

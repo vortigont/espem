@@ -1,17 +1,33 @@
+/*  ESPEM - ESP Energy monitor
+ *  A code for ESP8266/ESP32 based boards to interface with PeaceFair PZEM PowerMeters
+ *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
+ *
+ *  (c) Emil Muratov 2018-2021  https://github.com/vortigont/espem
+ *
+ */
+
 #include "espem.h"
 
 
 void PMETER::begin(){
   #ifdef ESPEM_USE_HWSERIAL
-    hwser = new HardwareSerial(HWSERIAL_PORT);
-    pzem = std::unique_ptr<PZEM004T>(new PZEM004T(hwser));  // Connect to PZEM via HW_serial
+      hwser = new HardwareSerial(HWSERIAL_PORT);
 
-    #ifdef ESPEM_HWSERIAL_SWAP
-      hwser->swap();      //swap hw_serial pins to gpio13(rx),15(tx)
+    #if defined(ESP32)
+      #if defined (PIN_RX) && defined (PIN_TX)
+        pzem = std::unique_ptr<PZEM>(new PZEM(hwser, PIN_RX, PIN_TX));  // Connect to PZEM via HW_serial
+      #else
+        pzem = std::unique_ptr<PZEM>(new PZEM(hwser));  // Connect to PZEM via HW_serial
+      #endif
+    #else // ESP8266
+      pzem = std::unique_ptr<PZEM>(new PZEM(hwser));  // Connect to PZEM via HW_serial
     #endif
 
-  #else
-    pzem = std::unique_ptr<PZEM004T>(new PZEM004T(PIN_RX, PIN_TX));  // Connect to PZEM via sw_serial pins
+    #if defined ESPEM_HWSERIAL_SWAP && defined ESP8266
+        hwser->swap();      //swap hw_serial pins to gpio13(rx),15(tx) for esp8266
+    #endif
+  #elif defined ESP8266 // softwareserial
+    pzem = std::unique_ptr<PZEM>(new PZEM(PIN_RX, PIN_TX));  // Connect to PZEM via sw_serial pins
   #endif
 
   pzeminit();
@@ -24,8 +40,11 @@ bool PMETER::pzeminit() {
 
   LOG(print, F("Init PZEM..."));
 
-  // Set PowerMeter address
-  pzemrdy = pzem->setAddress(ip);
+#ifndef USE_PZEMv3
+  pzemrdy = pzem->setAddress(ip);   // Set PowerMeter address  for an "old" PZEM
+#else
+  pzemrdy = true;   // just a stub for PZEM-004T-v30, TODO: implement some kind of a real link check
+#endif
 
   LOG(println, pzemrdy ? F("OK!") : F("FAILED!"));
   return pzemrdy;
@@ -33,7 +52,7 @@ bool PMETER::pzeminit() {
 
 // function to read meterings from PZEM object and fill array with data
 // read from object 'meter', write to array 'result', correct PF if 'PF_fix'
-bool PMETER::pollMeter(std::unique_ptr<PZEM004T> &meter, pmeterData &result, bool fixpf) {
+bool PMETER::pollMeter(std::unique_ptr<PZEM> &meter, pmeterData &result, bool fixpf) {
 
   if (!pzem)    // no object
     return false;
@@ -51,7 +70,11 @@ bool PMETER::pollMeter(std::unique_ptr<PZEM004T> &meter, pmeterData &result, boo
 
   //fill the array with new meter data
   for ( uint8_t i = 0; i != 4; ++i) {
-    result.meterings[i] = (*(meter).*pzdatafunc[i])(ip);
+    #ifdef USE_PZEMv3
+      result.meterings[i] = (*(meter).*pzdatafunc[i])();
+    #else
+      result.meterings[i] = (*(meter).*pzdatafunc[i])(ip);
+    #endif
 
       if ( result.meterings[i] < 0) { pzemrdy = false; lastpoll = 0; return false; }         // return on error reading meter
       isdata = result.meterings[i] || isdata;

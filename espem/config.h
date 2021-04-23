@@ -11,14 +11,24 @@
 
 
 #define FW_NAME "espem"
-#define PMeterESP_VER FW_NAME
 
-#ifdef ESP8266
-  #define HWSERIAL_PORT UART0
+#define ESPEM_USE_HWSERIAL
+
+#ifndef HWSERIAL_PORT
+  #ifdef ESP8266
+    #define HWSERIAL_PORT UART0
+  #endif
+  #ifdef ESP32
+    #define HWSERIAL_PORT (2U)
+  #endif
 #endif
-#ifdef ESP32
-  #define HWSERIAL_PORT (2U)
+
+#ifdef USE_PZEMv3
+  #define PZEM_LIB (PZEM004T)
+#else
+  #define PZEM_LIB (PZEM004Tv30)
 #endif
+
 
 // LOG macro's
 #if defined(LOG)

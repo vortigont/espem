@@ -260,7 +260,7 @@ void set_directctrls(Interface *interf, JsonObject *data){
         if (!_s.compareTo(_k)){
             mcstate_t _a = espem->collector((mcstate_t)kv.value().as<unsigned short>());
             embui.var(_k, String((uint8_t)_a));
-            LOG(printf_P, PSTR("UI: Changed Collector state to: %d\n"), espem->collector() );
+            LOG(printf_P, PSTR("UI: Changed Collector state to: %d\n"), (int)espem->collector() );
         }
 
         _s=FPSTR(V_SMPLCNT);

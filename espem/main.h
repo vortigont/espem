@@ -6,6 +6,8 @@
  *
  */
 
+#pragma once
+
 #define UPD_RESTART_DELAY   5   // restart delay when updating firmware
 #define BAUD_RATE       115200  // serial debug port baud rate
 #define HTTP_VER_BUFSIZE  200

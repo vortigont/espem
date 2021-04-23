@@ -1,8 +1,8 @@
 /*  ESPEM - ESP Energy monitor
- *  A code for ESP8266 based boards to interface with PeaceFair PZEM PowerMeters
+ *  A code for ESP8266/ESP32 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
  *
- *  (c) Emil Muratov 2018
+ *  (c) Emil Muratov 2018-2021  https://github.com/vortigont/espem
  *
  */
 
@@ -10,7 +10,12 @@
 #include <memory>
 #include "main.h"
 // Libs
-#include <PZEM004T.h>
+#ifdef USE_PZEMv3
+ #include <PZEM004Tv30.h>
+#else
+ #include <PZEM004T.h>
+#endif
+// Tasker object from EmbUI
 #include "ts.h"
 
 // Defaults
@@ -29,10 +34,6 @@
 #endif
 
 #define ESPEM_MEMRESERVE    (4*1024U)      // Bytes
-
-
-//declare pointer-to-member function for PZEM class
-typedef float( PZEM004T::*PZPTMF) (const IPAddress& );
 
 
 // Metrics collector state
@@ -97,6 +98,20 @@ float pf() const {
 }
 };
 
+#ifdef USE_PZEMv3
+class PZEM: public PZEM004Tv30 {
+    using PZEM004Tv30::PZEM004Tv30;
+};
+//declare pointer-to-member function for PZEM class
+typedef float( PZEM::*PZPTMF)();
+#else
+class PZEM: public PZEM004T {
+    using PZEM004T::PZEM004T;
+};
+//declare pointer-to-member function for PZEM class
+typedef float( PZEM::*PZPTMF) (const IPAddress& );
+#endif
+
 
 
 /**
@@ -136,7 +151,7 @@ private:
 #endif
 
     // An instance of PZEM lib object
-    std::unique_ptr<PZEM004T> pzem = nullptr;
+    std::unique_ptr<PZEM> pzem = nullptr;
 
     IPAddress ip = ESPEM_IPADDR;
 
@@ -147,7 +162,7 @@ private:
     unsigned long lastpoll = 0;
 
     //pointer array to lib funtions
-    PZPTMF pzdatafunc[4] = {&PZEM004T::voltage, &PZEM004T::current, &PZEM004T::power, &PZEM004T::energy};
+    PZPTMF pzdatafunc[4] = {&PZEM::voltage, &PZEM::current, &PZEM::power, &PZEM::energy};
 
     //a struct for meter data
     pmeterData pdata;
@@ -156,7 +171,7 @@ private:
 // Private Methods
     bool pzeminit();
 
-    bool pollMeter(std::unique_ptr<PZEM004T> &meter, pmeterData &result, bool fixpf);
+    bool pollMeter(std::unique_ptr<PZEM> &meter, pmeterData &result, bool fixpf);
 
 
 };
@@ -185,7 +200,7 @@ public:
     };
 
     ~PMETRICS(){
-        tPoller.disable();
+        ts.deleteTask(tPoller);
         delete samples;
     };
 

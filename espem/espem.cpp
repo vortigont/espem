@@ -1,14 +1,19 @@
 /*  ESPEM - ESP Energy monitor
- *  A code for ESP8266 based boards to interface with PeaceFair PZEM PowerMeters
+ *  A code for ESP8266/ESP32 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
  *
- *  (c) Emil Muratov 2017
+ *  (c) Emil Muratov 2018-2021  https://github.com/vortigont/espem
  *
  */
 
 #include "espem.h"
 #include "EmbUI.h"      // EmbUI framework
 
+#ifdef ESP32
+ #define MAX_FREE_MEM_BLK ESP.getMaxAllocHeap()
+#else
+ #define MAX_FREE_MEM_BLK ESP.getMaxFreeBlockSize()
+#endif
 
 // sprintf template for json sampling data
 #define JSON_SMPL_LEN 80    // {"t":1615496537000,"U":229.50,"I":1.47,"P":1216,"W":5811338,"pF":0.64},
@@ -124,8 +129,8 @@ void ESPEM::wdatareply(AsyncWebServerRequest *request){
 // return json-formatted response for in-RAM sampled data
 void ESPEM::wsamples(AsyncWebServerRequest *request) {
 
-  // check if samples vector is not nullptr
-  if ( !metrics ) {
+  // check if there is any sampled data
+  if ( !getMetricsCap() ) {
     request->send_P(503, PGmimetxt, PGsmpld);
     return;
   }
@@ -218,11 +223,11 @@ size_t PMETRICS::poolAlloc(size_t size){
   if (!size)
     return 0;
 
-  LOG(printf_P, PSTR("PMETRICS: FreeHeap: %d, MaxFreeBlockSize: %d\n"), ESP.getFreeHeap(), ESP.getMaxFreeBlockSize());
+  LOG(printf_P, PSTR("PMETRICS: FreeHeap: %d, MaxFreeBlockSize: %d\n"), ESP.getFreeHeap(), MAX_FREE_MEM_BLK);
 
   delete samples; // make sure it is free
-  if (size > ESP.getMaxFreeBlockSize()/1024 - ESPEM_MEMRESERVE)
-      size = ESP.getMaxFreeBlockSize()/1024 - ESPEM_MEMRESERVE;
+  if (size > MAX_FREE_MEM_BLK/1024 - ESPEM_MEMRESERVE)
+      size = MAX_FREE_MEM_BLK/1024 - ESPEM_MEMRESERVE;
 
   samples = new std::vector<pmeterData>(size*1024 / sizeof(pmeterData));
 
@@ -264,7 +269,7 @@ mcstate_t PMETRICS::collector(mcstate_t newstate){
       break;
     }
   }
-  LOG(printf_P, PSTR("Collector state: %d\n"), mcstate);
+  LOG(printf_P, PSTR("Collector state: %d\n"), (int)mcstate);
   return mcstate;
 }
 
@@ -280,12 +285,12 @@ size_t PMETRICS::poolResize(size_t size){
   LOG(printf_P, PSTR("Requested metrics pool change to %d KiB\n"), size);
   poolsize = size;
 
-  if (!samples || !size){
+  if (!size){
     collector(mcstate_t::MC_DISABLE);
     return 0;
   }
 
-  if (size*1024 < samples->capacity()*sizeof(pmeterData)){
+  if ( samples && (size*1024 < samples->capacity()*sizeof(pmeterData)) ){
     LOG(printf_P, PSTR("Resizing metrics pool to fit %d samples\n"), size*1024 / sizeof(pmeterData));
     samples->resize(size*1024 / sizeof(pmeterData));
     samples->shrink_to_fit();

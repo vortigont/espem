@@ -20,8 +20,11 @@ extern "C" int clock_gettime(clockid_t unused, struct timespec *tp);
 
 // PROGMEM strings
 // sprintf template for json version data
+#ifdef ESP8266
 static const char PGverjson[] PROGMEM = "{\"ChipID\":\"%x\",\"FlashSize\":%u,\"Core\":\"%s\",\"SDK\":\"%s\",\"firmware\":\"%s\",\"version\":\"%s\",\"CPUMHz\":%u,\"Heap\":%u,\"Uptime\":%u,}";
-
+#elif defined ESP32
+static const char PGverjson[] PROGMEM = "{\"ChipID\":\"%s\",\"FlashSize\":%u,\"SDK\":\"%s\",\"firmware\":\"%s\",\"version\":\"%s\",\"CPUMHz\":%u,\"Heap\":%u,\"Uptime\":%u,}";
+#endif
 
 // Our instance of espem
 ESPEM *espem = nullptr;
@@ -84,7 +87,7 @@ void wver(AsyncWebServerRequest *request) {
 
   timespec tp;
   clock_gettime(0, &tp);
-
+#ifdef ESP8266
   snprintf_P(buff, sizeof(buff), PGverjson,
     ESP.getChipId(),
     ESP.getFlashChipSize(),
@@ -95,6 +98,18 @@ void wver(AsyncWebServerRequest *request) {
     ESP.getCpuFreqMHz(),
     ESP.getFreeHeap(),
     (uint32_t)tp.tv_sec);
+#else
+  snprintf_P(buff, sizeof(buff), PGverjson,
+    ESP.getChipModel(),
+    ESP.getFlashChipSize(),
+    ESP.getSdkVersion(),
+    FW_NAME,
+    TOSTRING(FW_VER),
+    ESP.getCpuFreqMHz(),
+    ESP.getFreeHeap(),
+    (uint32_t)tp.tv_sec);
+#endif
+
 
   request->send(200, FPSTR(PGmimejson), buff );
 }

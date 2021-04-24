@@ -148,7 +148,15 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
   }
 
   AsyncWebServerResponse* response = request->beginChunkedResponse(FPSTR(PGmimejson),
-                                  [this, sampleIndex, cnt](uint8_t* buffer, size_t maxLen, size_t index) mutable -> size_t {
+                                  [this, sampleIndex, cnt](uint8_t* buffer, size_t buffsize, size_t index) mutable -> size_t {
+
+      // If provided bufer is not large enough to fit 1 sample chunk, than I'm just sending
+      // an empty space char (allowed json symbol) and wait for the next buffer
+      if (buffsize < JSON_SMPL_LEN){
+        buffer[0] = 0x20; // ASCII 'Space'
+        return 1;
+      }
+
       size_t len = 0;
 
       const std::vector<pmeterData> *samples = metrics->getData();
@@ -158,16 +166,16 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
         cnt = samples->capacity();
 
       if (!sampleIndex){
-        buffer[0] = 0x5b;   // ASCII '['
+        buffer[0] = 0x5b;   // Open json with ASCII '['
         ++len;
-        sampleIndex = samples->capacity() - cnt;
+        sampleIndex = samples->capacity() - cnt;  // shift index to the last n'th sample as requested
       }
 
-
       time_t meter_time = embui.timeProcessor.getUnixTime() - (millis() - meter->getLastPollTime())/1000;  // find out timestamp for last sample
+      // todo: need to handle variable interval between samples
 
       // prepare a chunk of sampled data wrapped in json
-      while (len < (maxLen - JSON_SMPL_LEN) && sampleIndex != samples->capacity()){
+      while (len < (buffsize - JSON_SMPL_LEN) && sampleIndex != samples->capacity()){
         size_t idx = (metrics->getMetricsIdx() + sampleIndex) % samples->capacity();
         len += sprintf_P((char *)buffer + len, PGsmpljsontpl,
                     meter_time - ecfg.pollrate * (samples->capacity() - sampleIndex),
@@ -183,10 +191,9 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
         if (sampleIndex == samples->capacity()){
           buffer[len-1] = 0x5d;   // ASCII ']' implaced over last comma
         }
-
       }
 
-      //LOG(printf, "JSON: Sent %d items, maxlen: %d, len: %d, idx: %d\n", cnt, maxLen, len, sampleIndex);
+      //LOG(printf, "JSON: Sending %d items, buffer %d/%d, idx: %d\n", cnt, len, buffsize, sampleIndex);
       return len;
   });
 

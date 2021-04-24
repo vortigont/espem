@@ -1,15 +1,16 @@
-## Energy monitor based on ESP8266 controller and Peacefair PZEM-004T Power Meter
+## Energy monitor based on ESP8266/ESP32 controller and Peacefair PZEM-004T/PZEM-004Tv30 Power Meter
 
-A code for ESP8266 controller and a set of web-tools to gather, analyse, monitor and view stat and graphs
-for [Peacefair](https://peacefair.aliexpress.com/store/1773456/) PZEM-004T PowerMeter.
+A code for ESP8266/ESP32 controller and a set of web-tools to gather, analyse, monitor and view stat and graphs
+for [Peacefair](https://peacefair.aliexpress.com/store/1773456/) PZEM-004T/PZEM-004Tv30 PowerMeter.
 
 __[BUILD](/espem/BUILD.md) | [USAGE](/espem/USAGE.md) | [CHANGELOG](/CHANGELOG.md)__
 
 ## Features
 - WebUI via self-hosted HTTP/WebSocket server
 - Real-time gauges and power charts
-- metrics collector in memory pool
-- data/metrics export via json 
+- metrics collector in controller's memory pool
+- data/metrics export via json
+
 
 ### ESPEM WebUI Dashboard
 

@@ -21,15 +21,25 @@ First, copy default config file `espem/default_config.h` to `espem/user_config.h
  - Debuging might be enabled via `#define ESPEM_DEBUG Serial`
  - If using softwareSerial `#define PIN_RX` `#define PIN_TX`
 
-To build fw run:
+To build fw for espem8266 run:
 ```sh
 platformio run
 ```
-To build debug version, run:
+To build fw for espem8266 with PZEM-004Tv30 run:
 ```sh
-platformio run -e hwserdbg
+platformio run -e espem8266v30
+```
+To build espem8266 debug version, run:
+```sh
+platformio run -e espem8266debug
 ```
 it will build fw with lot's of debug info being printer to the Hardware `Serial1` port.
+
+To build fw for ESP32 with PZEM-004Tv30 run:
+```sh
+platformio run -e esp32v30
+```
+
 
 ### Making a LittleFS image file with web resources
 To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/DmytroKorniienko/EmbUI) framework and js/css files for the ESPEM project. The is no prebuild image since it is hard to maintain it, instead there is a shell script that downloads required files from github, repacks it and places under `/data` directory. Tha directory is used to create and upload LittleFS image to the controller. Run

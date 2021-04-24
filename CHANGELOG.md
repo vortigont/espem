@@ -1,10 +1,15 @@
 # Change Log
 
+## current master
+Add ESP32 support (hardware serial only, with pin remapping)
+Add PZEM-004Tv30 support (WIP)
+SoftwareSerial from now on is deprecated
+
 ## v 2.0.0 (2021-04-12)
 
   Completely reworked project.
-    - UI switched to EmbUI framework
-    - embeded dashboard using websockets for real-time data updates
+    - UI switched to [EmbUI](https://github.com/DmytroKorniienko/EmbUI) framework
+    - embeded dashboard using websockets for real-time data/gauges updates
     - most of the build-time defines moved to WebUI controls
     
 

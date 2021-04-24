@@ -69,6 +69,7 @@ bool ESPEM::begin(){
 
 
 // make a string with last-polled data (cacti poller format)
+// this is the 'compat' version for an old pzem w/o pf/HZ values
 String& ESPEM::mktxtdata ( String& txtdata) {
 
     //pmeterData pdata = meter->getData();
@@ -80,8 +81,8 @@ String& ESPEM::mktxtdata ( String& txtdata) {
     txtdata += meter->getData().power;
     txtdata += " W:";
     txtdata += meter->getData().energy;
-    txtdata += " pf:";
-    txtdata += pfcalc(meter->getData().meterings);
+//    txtdata += " pf:";
+//    txtdata += pfcalc(meter->getData().meterings);
     return txtdata;
 }
 

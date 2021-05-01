@@ -213,7 +213,11 @@ void ESPEM::wspublish(){
   interf->value(F("U"), meter->getData().voltage);
   interf->value(F("I"), meter->getData().current);
   interf->value(F("P"), meter->getData().power);
+#ifdef USE_PZEMv3
   interf->value(F("W"), meter->getData().energy);
+#else
+  interf->value(F("W"), meter->getData().energy/1000.0);
+#endif
   interf->value(F("Pf"), meter->getData().pf());
   interf->json_frame_flush();
   delete interf;

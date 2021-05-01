@@ -173,7 +173,7 @@
 		{{#if html == "iframe2"}}
 			<div class="frame"><iframe id="{{id}}" name="{{id}}" src="{{value}}" class="iframe">iframe does not supported</iframe></div>
 		{{/if}}
-		{{#if html == "custom" && type == "div"}}
+		{{#if html == "custom" && type == "js"}}
 		<!-- Custom div element, on create 'div' calls user js-function with a name passed in {{value}} parameter
 			params: id - becomes div ID and name
 			param.class - becomes css class selector
@@ -183,11 +183,20 @@
 			<span class="comment">{{label}}</span>
 			<div id="{{id}}" name="{{id}}" class="{{param.class}}"><img src onerror='{{value}}("{{id}}","{{param.arg1}}")'></div>
 		{{/if}}
+		{{#if html == "custom" && type == "txt"}}
+		<!-- Custom div with text content,
+			params: id - becomes div ID
+			param.class - becomes css class selector
+			value - becomes plain text in div
+			label - becomes div css class selector
+		-->
+			<div class="{{label}}"><div id="{{id}}">{{value}}</div></div>
+		{{/if}}
 		</div>
 	</script>
 
 	<script src="js/embui.js"></script>
-<!--	
+<!--
 	<script src="js/lib.js"></script>
 	<script src="js/maker.js"></script>
 -->

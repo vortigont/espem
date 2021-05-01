@@ -23,10 +23,12 @@ function rawdata_cb(obj) {
             frame[i].value = (frame[i].value).toFixed(2);
             pF = frame[i].value;
         }
-        if (frame[i].id === "I"){ I = frame[i].value; } 
-        if (frame[i].id === "P"){ P = frame[i].value; }
-        if (frame[i].id === "W"){ W = frame[i].value; }
+        // values for 'displays'
+        if (frame[i].id === "I"){ I = frame[i].value; frame.push({"id":"cur", "value": frame[i].value}); }
+        if (frame[i].id === "P"){ P = frame[i].value; frame.push({"id":"pwr", "value": frame[i].value}); }
+        if (frame[i].id === "W"){ W = frame[i].value; frame.push({"id":"enrg", "value": frame[i].value.toFixed(2)}); }
 
+        // обновить график с новым значением шкалы
         if (frame[i].id === "scntr" && Gsminichart){
             AmCharts.loadFile("http://" + location.host + "/samples.json?scntr=" + frame[i].value, {async: false}, function(data) {
                 Gsminichart.dataProvider = AmCharts.parseJSON(data);
@@ -36,7 +38,7 @@ function rawdata_cb(obj) {
             return;
         }
 
-        // requred for left-menu renderer
+        // required for left-menu renderer
         frame[i].html = true;
     }
 
@@ -49,7 +51,7 @@ function rawdata_cb(obj) {
     Gsminichart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": pF } );
     Gsminichart.validateData();
 
-    // pass data to the renderer to make it available under Menu area
+    // pass data to the renderer to make it available under Menu/display area
     rdr.value(obj);
 }
 

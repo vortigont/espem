@@ -5,6 +5,7 @@
 // General
 static const char C_ONE[] PROGMEM = "1";
 static const char C_mkchart[] PROGMEM = "mkchart";
+static const char C_js[] PROGMEM = "js";
 
 //////////////////////
 // Configuration variables names  - V_ prefix for 'Variable'

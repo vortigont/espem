@@ -1,5 +1,7 @@
 #!/bin/sh
 
+USAGE="Usage: `basename $0` [-h] [-t embuitag] args"
+
 # etag file
 tags=etags.txt
 # embui branch/tag name to fetch
@@ -7,6 +9,26 @@ embuitag="main"
 
 refresh_styles=0
 refresh_js=0
+
+# parse cmd options
+while getopts ht: OPT; do
+    case "$OPT" in
+        h)
+            echo $USAGE
+            exit 0
+            ;;
+        t)
+            echo "EmbUI tag is set to: $OPTARG"
+            embuitag=$OPTARG
+            ;;
+        \?)
+            # getopts issues an error message
+            echo $USAGE >&2
+            exit 1
+            ;;
+    esac
+done
+
 
 [ -f $tags ] || touch $tags
 
@@ -29,20 +51,20 @@ echo "Preparing resources for ESPEM FS image into ../data/ dir"
 mkdir -p ../data/css ../data/js
 
 # собираем скрипты и стили из репозитория EmbUI (используется dev ветка, при формировании выпусков пути нужно изменить)
-if freshtag https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/data.zip ; then
+if freshtag https://github.com/vortigont/EmbUI/raw/$embuitag/resources/data.zip ; then
     refresh_styles=1
     echo "EmbUI resources requires updating"
 else
     echo "EmbUI is up to date"
 fi
 
-if freshtag https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/html/js/lib.js ; then
+if freshtag https://github.com/vortigont/EmbUI/raw/$embuitag/resources/html/js/lib.js ; then
     refresh_js=1
 fi
-if freshtag https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/html/js/maker.js ; then
+if freshtag https://github.com/vortigont/EmbUI/raw/$embuitag/resources/html/js/maker.js ; then
     refresh_js=1
 fi
-if freshtag https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/html/js/dyncss.js ; then
+if freshtag https://github.com/vortigont/EmbUI/raw/$embuitag/resources/html/js/dyncss.js ; then
     refresh_js=1
 fi
 
@@ -58,7 +80,7 @@ if [ $refresh_styles -eq 1 ] ; then
 
     echo "refreshing embui css files..."
 
-    curl -sL https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/data.zip > embui.zip
+    curl -sL https://github.com/vortigont/EmbUI/raw/$embuitag/resources/data.zip > embui.zip
     # т.к. неизвестно что изменилось во фреймворке, скрипты или цсски, обновляем всё
     #unzip -o -d ../data/ embui.zip "css/*" "js/*"
     unzip -o -d ../data/ embui.zip "css/*" "js/tz*"
@@ -78,9 +100,9 @@ fi
 if [ $refresh_js -eq 1 ] ; then
     echo "refreshing embui js files..."
 
-    curl -sL https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/html/js/lib.js > embui.js
-    curl -sL https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/html/js/maker.js >> embui.js
-    curl -sL https://github.com/DmytroKorniienko/EmbUI/raw/$embuitag/resources/html/js/dyncss.js >> embui.js
+    curl -sL https://github.com/vortigont/EmbUI/raw/$embuitag/resources/html/js/lib.js > embui.js
+    curl -sL https://github.com/vortigont/EmbUI/raw/$embuitag/resources/html/js/maker.js >> embui.js
+    curl -sL https://github.com/vortigont/EmbUI/raw/$embuitag/resources/html/js/dyncss.js >> embui.js
     gzip -9 embui.js && mv -f embui.js.gz ../data/js/
 fi
 

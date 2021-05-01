@@ -122,18 +122,27 @@ void block_page_main(Interface *interf, JsonObject *data){
     interf->range(FPSTR(V_EPOLLRT), embui.param(FPSTR(V_EPOLLRT)).toInt(), 1, MAX_POLL_PERIOD, 1, F("Poll Rate, sec"), true);
     interf->json_section_end();     // end of line
 
+    // Plain values display
+    interf->json_section_line();             // "Live controls"
+    // id, type, value, label, param
+    interf->display(F("pwr"), espem->meterData().power);     // Power
+    interf->display(F("cur"), espem->meterData().current);   // Current
+    interf->display(F("enrg"), espem->meterData().energy);   // Energy
+    interf->json_section_end();     // end of line
+
+
     DynamicJsonDocument doc(128);
     JsonObject params = doc.to<JsonObject>();
     params[F("class")] = F("graphwide");    // css selector
 
     interf->json_section_line();
     // id, type, value, label, param
-    interf->custom(F("gaugeV"), F("div"),  FPSTR(C_mkchart), FPSTR(C_DICT[lang][CD::Voltage]), params);   // Voltage gauge
-    interf->custom(F("gaugePF"), F("div"), FPSTR(C_mkchart), FPSTR(C_DICT[lang][CD::PowerF]), params);    // Power Factor
+    interf->custom(F("gaugeV"), FPSTR(C_js),  FPSTR(C_mkchart), FPSTR(C_DICT[lang][CD::Voltage]), params);   // Voltage gauge
+    interf->custom(F("gaugePF"), FPSTR(C_js), FPSTR(C_mkchart), FPSTR(C_DICT[lang][CD::PowerF]), params);    // Power Factor
     interf->json_section_end();     // end of line
 
     params[F("arg1")] = embui.param(FPSTR(V_SMPLCNT));
-    interf->custom(F("gsmini"), F("div"), FPSTR(C_mkchart), F("Power chart"), params);
+    interf->custom(F("gsmini"), FPSTR(C_js), FPSTR(C_mkchart), F("Power chart"), params);
 
     // slider for the amount of metric samples to be plotted on a chart
     interf->range(FPSTR(V_SMPLCNT), (int)embui.param(FPSTR(V_SMPLCNT)).toInt(), 0, (int)espem->getMetricsCap(), 10, FPSTR(C_DICT[lang][CD::MScale]), true);

@@ -19,3 +19,29 @@
 .graphs {
     position:relative; display: flex; height: 200px;
 }
+
+
+#enrg, #pwr, #cur {
+    font-size: 35px;
+}
+#frequency:after {
+    content: 'Hz';
+}
+#cur:after {
+    content: 'Amps';
+}
+#pwr:before {
+    content: '⚡';
+}
+#pwr:after {
+    content: 'W';
+}
+#enrg:after {
+    content: 'kW·h';
+}
+#pf:after {
+    content: 'pF';
+}
+.pwr, .pf {
+    flex-grow: 1.5;
+}

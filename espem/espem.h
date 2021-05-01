@@ -378,6 +378,15 @@ public:
     }
 
 
+    const pmeterData meterData() {
+        pmeterData _d;
+        if (meter){
+            _d = meter->getData();
+        }        
+        return _d;  // return some dummy struct :)
+    }
+
+
 protected:
 
 private:
@@ -394,6 +403,7 @@ private:
     // todo: provide vector with flags for each field
     String& mkjsondata( const float result[], const unsigned long tstamp, String& jsn, const bool W );
 
+    // publish meter data via WebSocket
     void wspublish();
 
 };

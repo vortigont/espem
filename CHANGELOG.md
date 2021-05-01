@@ -1,9 +1,11 @@
 # Change Log
 
 ## current master
-Add ESP32 support (hardware serial only, with pin remapping)
-Add PZEM-004Tv30 support (WIP)
++ WebUI displays for Voltage, Current, Energy 
++ ESP32 support (hardware serial only, with pin remapping)
++ PZEM-004Tv30 support (WIP)
 SoftwareSerial from now on is deprecated
++ heap curruption fix
 
 ## v 2.0.0 (2021-04-12)
 

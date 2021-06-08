@@ -17,8 +17,8 @@
 
 // sprintf template for json sampling data
 #define JSON_SMPL_LEN 80    // {"t":1615496537000,"U":229.50,"I":1.47,"P":1216,"W":5811338,"pF":0.64},
-static const char PGsmpljsontpl[] PROGMEM = "{\"t\":%ld000,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"pF\":%.2f},";
-static const char PGdatajsontpl[] PROGMEM = "{\"age\":%ld,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"pF\":%.2f}";
+static const char PGsmpljsontpl[] PROGMEM = "{\"t\":%llu000,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"pF\":%.2f},";
+static const char PGdatajsontpl[] PROGMEM = "{\"age\":%lu,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"pF\":%.2f}";
 
 // HTTP responce messages
 static const char PROGMEM PGsmpld[] = "Metrics collector disabled";

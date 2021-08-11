@@ -8,9 +8,25 @@
 
 #pragma once
 
+#define FW_NAME "espem"
+
+#define FW_VERSION_MAJOR     2
+#define FW_VERSION_MINOR     0
+#define FW_VERSION_REVISION  0
+
+/* make version as integer*/
+#define FW_VERSION ((FW_VERSION_MAJOR) << 16 | (FW_VERSION_MINOR) << 8 | (FW_VERSION_REVISION))
+
+/* make version as string*/
+#define FW_VERSION_STRING   TOSTRING(FW_VERSION_MAJOR) "." TOSTRING(FW_VERSION_MINOR) "." TOSTRING(FW_VERSION_REVISION)
+
+
+
 #define UPD_RESTART_DELAY   5   // restart delay when updating firmware
 #define BAUD_RATE       115200  // serial debug port baud rate
 #define HTTP_VER_BUFSIZE  200
+
+#define WEBUI_PUBLISH_INTERVAL  20
 
 // Sketch configuration
 #include "globals.h"    // EmbUI macro's for LOG

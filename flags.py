@@ -7,4 +7,4 @@ revision = (
     .strip()
     .decode("utf-8")
 )
-print("-DFW_VER='\"%s\"'" % revision)
+print("-DGIT_REV='\"%s\"'" % revision)

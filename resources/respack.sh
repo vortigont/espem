@@ -5,7 +5,7 @@ USAGE="Usage: `basename $0` [-h] [-t embuitag] args"
 # etag file
 tags=etags.txt
 # embui branch/tag name to fetch
-embuitag="main"
+embuitag="v2.4.3"
 
 refresh_styles=0
 refresh_js=0
@@ -50,7 +50,7 @@ echo "Preparing resources for ESPEM FS image into ../data/ dir"
 
 mkdir -p ../data/css ../data/js
 
-# собираем скрипты и стили из репозитория EmbUI (используется dev ветка, при формировании выпусков пути нужно изменить)
+# собираем скрипты и стили из репозитория EmbUI
 if freshtag https://github.com/vortigont/EmbUI/raw/$embuitag/resources/data.zip ; then
     refresh_styles=1
     echo "EmbUI resources requires updating"

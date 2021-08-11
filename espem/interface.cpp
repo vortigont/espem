@@ -81,9 +81,15 @@ void section_main_frame(Interface *interf, JsonObject *data){
         LOG(println, F("UI: Opening network setup section"));
         BasicUI::block_settings_netw(interf, data);
     } else {
-        block_page_main(interf, data);                 // Строим основной блок 
+        block_page_main(interf, data);                  // Строим основной блок 
     }
 
+    interf->json_frame_flush();                         // Close interface section
+
+    // Publish firmware version (visible under menu section)
+    interf->json_frame_value();
+    interf->value(F("fwver"), F(FW_VERSION_STRING), true);
+    interf->json_frame_flush();
 }
 
 /**

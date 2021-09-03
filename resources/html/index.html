@@ -115,11 +115,10 @@
 		{{/if}}
 		{{#if html == "button"}}
 			<div id="{{id}}" {{#if2 color}}style="background-color: {{color}}"{{/if2}} class="pure-u-1 pure-button pure-button-primary mr"
-				{{#if2 submit}}{{onevent "click", "on_submit", submit, value}}{{/if2}}
-				{{#if2 !submit}}{{onevent "click", "on_change", id}}{{/if2}}
-			>
-				{{label}}
-			</div>
+				{{#if2 type == 0}}{{onevent "click", "on_change", id, value}}{{/if2}}
+				{{#if2 type == 1}}{{onevent "click", "on_submit", id, value}}{{/if2}}
+				{{#if2 type == 2}}{{onevent "click", "on_js", id, value}}{{/if2}}
+			>{{label}}</div>
 		{{/if}}
 		{{#if html == "textarea"}}
 			<textarea class="pure-u-1" maxlength="255" id="{{id}}" name="{{id}}"

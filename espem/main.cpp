@@ -45,11 +45,11 @@ void setup() {
 
 
   // restore ESPEM defaults configuration
-  ESPEM_CFG _cfg(embui.param(FPSTR(V_EPOLLRT)).toInt(),
-                  embui.param(FPSTR(V_EPOOLSIZE)).toInt(),
-                  (bool)embui.param(FPSTR(V_EPFFIX)).toInt(),
-                  (bool)embui.param(FPSTR(V_EPOLLENA)).toInt(),
-                  (mcstate_t)embui.param(FPSTR(V_ECOLLECTORSTATE)).toInt()
+  ESPEM_CFG _cfg(embui.paramVariant(FPSTR(V_EPOLLRT)),
+              embui.paramVariant(FPSTR(V_EPOOLSIZE)),
+              embui.paramVariant(FPSTR(V_EPFFIX)),
+              embui.paramVariant(FPSTR(V_EPOLLENA)),
+              (mcstate_t)embui.paramVariant(FPSTR(V_ECOLLECTORSTATE)).as<short>()
   );
 
   // create and run ESPEM object

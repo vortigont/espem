@@ -125,7 +125,7 @@ void block_page_main(Interface *interf, JsonObject *data){
 
     interf->checkbox(FPSTR(V_EPOLLENA), espem->meterPolling(), F("Meter Polling"), true);   // Meter poller status
     // Poll Rate range slider
-    interf->range(FPSTR(V_EPOLLRT), embui.param(FPSTR(V_EPOLLRT)).toInt(), 1, MAX_POLL_PERIOD, 1, F("Poll Rate, sec"), true);
+    interf->range(FPSTR(V_EPOLLRT), embui.paramVariant(FPSTR(V_EPOLLRT)), 1, MAX_POLL_PERIOD, 1, F("Poll Rate, sec"), true);
     interf->json_section_end();     // end of line
 
     // Plain values display
@@ -137,7 +137,7 @@ void block_page_main(Interface *interf, JsonObject *data){
     interf->json_section_end();     // end of line
 
 
-    DynamicJsonDocument doc(128);
+    StaticJsonDocument<128> doc;
     JsonObject params = doc.to<JsonObject>();
     params[F("class")] = F("graphwide");    // css selector
 
@@ -147,11 +147,11 @@ void block_page_main(Interface *interf, JsonObject *data){
     interf->custom(F("gaugePF"), FPSTR(C_js), FPSTR(C_mkchart), FPSTR(C_DICT[lang][CD::PowerF]), params);    // Power Factor
     interf->json_section_end();     // end of line
 
-    params[F("arg1")] = embui.param(FPSTR(V_SMPLCNT));
+    params[F("arg1")] = embui.paramVariant(FPSTR(V_SMPLCNT));
     interf->custom(F("gsmini"), FPSTR(C_js), FPSTR(C_mkchart), F("Power chart"), params);
 
     // slider for the amount of metric samples to be plotted on a chart
-    interf->range(FPSTR(V_SMPLCNT), (int)embui.param(FPSTR(V_SMPLCNT)).toInt(), 0, (int)espem->getMetricsCap(), 10, FPSTR(C_DICT[lang][CD::MScale]), true);
+    interf->range(FPSTR(V_SMPLCNT), embui.paramVariant(FPSTR(V_SMPLCNT)).as<int>(), 0, (int)espem->getMetricsCap(), 10, FPSTR(C_DICT[lang][CD::MScale]), true);
 
     interf->json_frame_flush();     // flush frame
 }
@@ -175,7 +175,7 @@ void block_page_espemset(Interface *interf, JsonObject *data){
     interf->checkbox(FPSTR(V_EPOLLENA), espem->meterPolling(), F("Meter Polling"), true);   // Meter poller status
 
     // Poll Rate range slider
-    interf->range(FPSTR(V_EPOLLRT), embui.param(FPSTR(V_EPOLLRT)).toInt(), 1, MAX_POLL_PERIOD, 1, F("Poll Rate, sec"), true);
+    interf->range(FPSTR(V_EPOLLRT), embui.paramVariant(FPSTR(V_EPOLLRT)).as<int>(), 1, MAX_POLL_PERIOD, 1, F("Poll Rate, sec"), true);
     interf->json_section_end();     // end of line
 
 
@@ -187,7 +187,6 @@ void block_page_espemset(Interface *interf, JsonObject *data){
     interf->constant(F("mcap"), _msg);
 
     interf->json_section_line(FPSTR(A_SET_ESPEM));
-    //interf->text(FPSTR(V_EPOOLSIZE), embui.param(FPSTR(V_EPOOLSIZE)), FPSTR(F("Metrics RAM pool size, KiB")), false);          // Memory pool for metrics data, KiB
     interf->number(FPSTR(V_EPOOLSIZE), FPSTR(F("Metrics RAM pool size, KiB")));          // Memory pool for metrics data, KiB
     // Button "Apply Metrics pool settings"
     interf->button_submit(FPSTR(A_SET_ESPEM), FPSTR(T_DICT[lang][TD::D_Apply]), F("blue"));
@@ -200,12 +199,11 @@ void block_page_espemset(Interface *interf, JsonObject *data){
 	 *   2: Paused, collecting but not storing, memory reserved 
 	 */
     interf->select(FPSTR(V_ECOLLECTORSTATE), embui.param(FPSTR(V_ECOLLECTORSTATE)), F("Metrics collector status"), true, false);
-    interf->option("0", F("Disabled"));
-    interf->option("1", F("Running"));
-    interf->option("2", F("Paused"));
-    interf->json_section_end();
+    interf->option(0, F("Disabled"));
+    interf->option(1, F("Running"));
+    interf->option(2, F("Paused"));
+    interf->json_section_end();     // select
 
-    interf->json_section_end();     // end of main
     interf->json_frame_flush();     // flush frame
 }
 
@@ -230,7 +228,7 @@ void set_espem_opts(Interface *interf, JsonObject *data){
 
     espem->poolResize((*data)[FPSTR(V_EPOOLSIZE)].as<unsigned int>());
     // display main page
-    block_page_main(interf, data);
+    if (interf) block_page_main(interf, nullptr);
 }
 
 
@@ -249,7 +247,7 @@ void set_directctrls(Interface *interf, JsonObject *data){
         String _k(kv.key().c_str());
 
         if (!_s.compareTo(_k)){
-           espem->pffix(kv.value().as<unsigned short>());
+           espem->pffix(kv.value());
            SETPARAM(FPSTR(V_EPFFIX));
            LOG(printf_P, PSTR("UI: Set PF fix to: %d\n"), espem->pffix() );
            continue;
@@ -257,7 +255,7 @@ void set_directctrls(Interface *interf, JsonObject *data){
 
         _s=FPSTR(V_EPOLLENA);
         if (!_s.compareTo(_k)){
-           espem->meterPolling(kv.value().as<unsigned short>());
+           espem->meterPolling(kv.value());
            SETPARAM(FPSTR(V_EPOLLENA));
            LOG(printf_P, PSTR("UI: Set Polling state to: %d\n"), espem->meterPolling() );
            continue;
@@ -265,7 +263,7 @@ void set_directctrls(Interface *interf, JsonObject *data){
 
         _s=FPSTR(V_EPOLLRT);
         if (!_s.compareTo(_k)){
-           espem->PollRate(kv.value().as<unsigned int>());
+           espem->PollRate(kv.value());
            SETPARAM(FPSTR(V_EPOLLRT));
            LOG(printf_P, PSTR("UI: Set Poll interval to: %d\n"), espem->PollRate() );
            continue;
@@ -285,9 +283,9 @@ void set_directctrls(Interface *interf, JsonObject *data){
             if (interf){
                 interf->json_frame_custom(F("rawdata"));
                 interf->value(F("scntr"), kv.value());
+                interf->json_frame_flush();
             }
         }
     }
 
-    interf->json_frame_flush();
 }

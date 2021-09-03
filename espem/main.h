@@ -12,7 +12,7 @@
 
 #define FW_VERSION_MAJOR     2
 #define FW_VERSION_MINOR     0
-#define FW_VERSION_REVISION  0
+#define FW_VERSION_REVISION  1
 
 /* make version as integer*/
 #define FW_VERSION ((FW_VERSION_MAJOR) << 16 | (FW_VERSION_MINOR) << 8 | (FW_VERSION_REVISION))
@@ -22,7 +22,6 @@
 
 
 
-#define UPD_RESTART_DELAY   5   // restart delay when updating firmware
 #define BAUD_RATE       115200  // serial debug port baud rate
 #define HTTP_VER_BUFSIZE  200
 

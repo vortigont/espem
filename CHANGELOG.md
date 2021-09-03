@@ -1,11 +1,14 @@
 # Change Log
 
 ## current master
+
+## v 2.0.1 (2021-09-03)
 + WebUI displays for Voltage, Current, Energy 
 + ESP32 support (hardware serial only, with pin remapping)
 + PZEM-004Tv30 support (WIP)
-SoftwareSerial from now on is deprecated
+- SoftwareSerial from now on is deprecated
 + heap curruption fix
+* bump EmbUI version up to v2.5
 
 ## v 2.0.0 (2021-04-12)
 

@@ -9,7 +9,7 @@ Steps to run:
  - Uploading LittleFS image
  
 ### External Libs used to build/use the firmware
-- [EmbUI](https://github.com/DmytroKorniienko/EmbUI) framework is used to construct Web interface, manage WiFi, store configuration, etc
+- [EmbUI](https://github.com/vortigont/EmbUI) framework is used to construct Web interface, manage WiFi, store configuration, etc
 - [PZEM004T](https://github.com/olehs/PZEM004T) library to interact with PZEM power meter
 - [FTPClientServer](https://github.com/charno/FTPClientServer) to access ESP's file system (optional)
 - [AmCharts](https://www.amcharts.com/) JavaScript Charts & Maps to draw gauges and charts
@@ -42,7 +42,7 @@ platformio run -e esp32v30
 
 
 ### Making a LittleFS image file with web resources
-To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/DmytroKorniienko/EmbUI) framework and js/css files for the ESPEM project. The is no prebuild image since it is hard to maintain it, instead there is a shell script that downloads required files from github, repacks it and places under `/data` directory. Tha directory is used to create and upload LittleFS image to the controller. Run
+To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/vortigont/EmbUI) framework and js/css files for the ESPEM project. The is no prebuild image since it is hard to maintain it, instead there is a shell script that downloads required files from github, repacks it and places under `/data` directory. Tha directory is used to create and upload LittleFS image to the controller. Run
 ```sh
 cd resources
 ./respack.sh
@@ -55,4 +55,4 @@ platformio run -t uploadfs
 platformio run -t upload
 ```
 
-That's it. Controller should reboot and enable WiFi.
+That's it. Controller should reboot and enable WiFi. Look for the open Access point names like EmbUI-xxxx, connect to it and open WebUI http://192.168.4.1/, proceed with settings via WebUI.

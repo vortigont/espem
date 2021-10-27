@@ -28,14 +28,32 @@ static const char PROGMEM PGacao[] = "Access-Control-Allow-Origin";
 using namespace pzmbus;     // use general pzem abstractions
 
 
-bool ESPEM::begin(){
+bool ESPEM::begin(const uart_port_t p, int rx, int tx){
+  LOG(printf, "espem.begin: port: %d, rx_pin: %d, tx_pin:%d\n", p, rx, tx);
 
-  qport = new UartQ(PZEM_UART_PORT, RX_PIN, TX_PIN);
+  // let's make our begin idempotent )
+  if (qport){
+    if (pz)
+      pz->detachMsgQ();
 
+    delete qport;
+    qport = nullptr;
+  }
+
+  qport = new UartQ(p, rx, tx);
+  if (!qport) return false; // failed to create qport
+
+  if (pz){                  // obj already exist
+    pz->attachMsgQ(qport);
+    qport->startQueues();
+    return true;
+  }
+
+  // first run
   pz = new PZ004(PZEM_ID, ADDR_ANY);
+  if (!pz) return false;    // failed to create obj
 
   pz->attachMsgQ(qport);
-
   qport->startQueues();
 
   // WebUI updater task
@@ -69,6 +87,8 @@ bool ESPEM::begin(){
 // make a string with last-polled data (cacti poller format)
 // this is the 'compat' version for an old pzem w/o pf/HZ values
 String& ESPEM::mktxtdata ( String& txtdata) {
+    if (!pz)
+      return txtdata;
 
     //pmeterData pdata = meter->getData();
     const auto m = pz->getMetricsPZ004();
@@ -99,12 +119,9 @@ void ESPEM::wpmdata(AsyncWebServerRequest *request) {
 
 
 void ESPEM::wdatareply(AsyncWebServerRequest *request){
-/*
-  if ( !tsc.getTScnt() ) {
-    request->send_P(503, PGmimetxt, PGdre );
-    return;
-  }
-*/
+    if (!pz)
+      return;
+
   const auto m = pz->getMetricsPZ004();
   char buffer[JSON_SMPL_LEN];
   sprintf_P(buffer, PGdatajsontpl,
@@ -201,7 +218,7 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
 
 // publish meter data via WebSocket
 void ESPEM::wspublish(){
-  if (!embui.ws.count())  // exit, if there are no clients connected
+  if (!embui.ws.count() || !pz)  // exit, if there are no clients connected
       return;
 
   Interface *interf = new Interface(&embui, &embui.ws, 512);
@@ -252,8 +269,11 @@ bool ESPEM::tsSet(size_t size, uint32_t interval){
   return (bool)tsc.getTScap();
 }
 
-
 mcstate_t ESPEM::set_collector_state(mcstate_t state){
+  if (!pz){
+    ts_state = mcstate_t::MC_DISABLE;
+      return ts_state;
+  }
 
   switch (state) {
     case mcstate_t::MC_RUN : {

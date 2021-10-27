@@ -18,20 +18,13 @@
 #ifndef DEFAULT_WS_UPD_RATE
     #define DEFAULT_WS_UPD_RATE     2     // ws clients update rate, sec
 #endif
-#ifndef ESPEM_MAXPOLLRATE
-    #define ESPEM_MAXPOLLRATE       1000  // ms
-#endif
 
 #ifndef ESPEM_MEMPOOL
-    #define ESPEM_MEMPOOL 300             // samples to store in ringbuff
+    #define ESPEM_MEMPOOL 300             // samples to store in ringbuff by default (5 min)
 #endif
 
-#define PZEM_UART_PORT UART_NUM_1
-#define RX_PIN      22
-#define TX_PIN      19
 #define PZEM_ID     1
 #define PORT_1_ID   1
-#define PZEM_1_ADDR 10
 
 // Metrics collector state
 enum class mcstate_t{MC_DISABLE=0, MC_RUN, MC_PAUSE};
@@ -44,7 +37,7 @@ class ESPEM {
 public:
 
     //std::unique_ptr<PZPool> pzpool;        // PZEM object
-    PZ004 *pz;
+    PZ004 *pz = nullptr;
 
     /**
      * Class constructor
@@ -68,7 +61,7 @@ public:
 
 
 
-    bool begin();
+    bool begin(const uart_port_t p, int rx=UART_PIN_NO_CHANGE, int tx=UART_PIN_NO_CHANGE);
 
     /** @brief onNetIfUp - коллбек для внешнего события "сеть доступна"
      *
@@ -132,7 +125,7 @@ public:
 
 private:
 
-    UartQ *qport;
+    UartQ *qport = nullptr;
     TSContainer<pz004::metrics> tsc;
     uint8_t ts_id;
     mcstate_t ts_state = mcstate_t::MC_DISABLE;

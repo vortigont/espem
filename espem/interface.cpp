@@ -1,14 +1,14 @@
-#include "main.h"
-
+#include "espem.h"
 #include <EmbUI.h>
 #include "interface.h"
 #include "ui_i18n.h"    // localized GUI text-strings
-#include "espem.h"
 
 // статический класс с готовыми формами для базовых системных натсроек
 #include "basicui.h"
 
 #define MAX_UI_UPDATE_RATE 30
+#define MAX_GPIO           39
+#define MAX_UART           2
 
 extern ESPEM *espem;
 
@@ -29,7 +29,9 @@ void create_parameters(){
     embui.var_create(FPSTR(V_UI_UPDRT), DEFAULT_WS_UPD_RATE);       // WebUI update rate
     embui.var_create(FPSTR(V_SMPL_PERIOD), 1);                      // 
     embui.var_create(FPSTR(V_EPOOLSIZE), ESPEM_MEMPOOL);            // metrics collector mem pool size, KiB
-    embui.var_create(FPSTR(V_SMPLCNT), 0);                          // Metrics graph - number of samples to draw in a small power chart
+    embui.var_create(FPSTR(V_UART), 0x1);                           // default UART port UART_NUM_1
+    embui.var_create(FPSTR(V_RX), -1);                              // RX pin (default)
+    embui.var_create(FPSTR(V_TX), -1);                              // TX pin (default)
 
     //Metrics collector run/pause
     //embui.var_create(FPSTR(V_ECOLLECTORSTATE), 1);                  // Collector state
@@ -45,14 +47,16 @@ void create_parameters(){
    /**
     * регистрируем статические секции для web-интерфейса с системными настройками
     */
-    BasicUI::add_sections();
+    basicui::add_sections();
 
 
     // активности
     embui.section_handle_add(FPSTR(A_SET_ESPEM),  set_espem_opts);
+    embui.section_handle_add(FPSTR(A_SET_UART),   set_uart_opts);
 
     // direct controls
     embui.section_handle_add(FPSTR(A_DIRECT_CTL),  set_directctrls);             // process direct update controls
+
 
 }
 
@@ -79,7 +83,7 @@ void section_main_frame(Interface *interf, JsonObject *data){
 
     if(!embui.sysData.wifi_sta){                        // если контроллер не подключен к внешней AP, сразу открываем вкладку с настройками WiFi
         LOG(println, F("UI: Opening network setup section"));
-        BasicUI::block_settings_netw(interf, data);
+        basicui::block_settings_netw(interf, data);
     } else {
         block_page_main(interf, data);                  // Строим основной блок 
     }
@@ -106,7 +110,7 @@ void block_menu(Interface *interf, JsonObject *data){
     /**
      * добавляем в меню пункт - настройки,
      */
-    BasicUI::opt_setup(interf, data);       // пункт меню "настройки"
+    basicui::opt_setup(interf, data);       // пункт меню "настройки"
 
     interf->json_section_end();
 }
@@ -179,6 +183,18 @@ void block_page_espemset(Interface *interf, JsonObject *data){
     interf->json_section_end();     // end of line
     */
 
+    interf->json_section_begin(FPSTR(A_SET_UART));
+
+    interf->json_section_line("");
+    interf->number(FPSTR(V_UART), "Uart port", 1, 0, MAX_UART);
+    interf->number(FPSTR(V_RX), "RX pin (-1 default)", 1, -1, MAX_GPIO);
+    interf->number(FPSTR(V_TX), "TX pin (-1 default)", 1, -1, MAX_GPIO);
+    interf->json_section_end();     // end of line
+
+    interf->button_submit(FPSTR(A_SET_UART), FPSTR(T_DICT[lang][TD::D_Apply]), F("blue"));
+    interf->json_section_end();     // end of "uart"
+
+
     interf->spacer(F("Metrics collector options"));
     String _msg(F("Metrics pool capacity: "));
     _msg += espem->getMetricsSize();
@@ -215,7 +231,7 @@ void block_page_espemset(Interface *interf, JsonObject *data){
  * обработчик статуса (периодического опроса контроллера веб-приложением)
  */
 void pubCallback(Interface *interf){
-    BasicUI::embuistatus(interf);
+    basicui::embuistatus(interf);
 }
 
 
@@ -295,4 +311,30 @@ void set_directctrls(Interface *interf, JsonObject *data){
         }
     }
 
+}
+
+/**
+ *  Apply uart options values
+ */
+void set_uart_opts(Interface *interf, JsonObject *data){
+    if (!data) return;
+
+    uint8_t p = (*data)[FPSTR(V_UART)].as<unsigned short>();
+    if ( p <= MAX_UART ){
+        SETPARAM(FPSTR(V_UART));
+    } else return;
+
+    int r = (*data)[FPSTR(V_RX)].as<int>();
+    if (r <= MAX_GPIO && r >0) {
+        SETPARAM(FPSTR(V_RX));
+    } else return;
+
+    int t = (*data)[FPSTR(V_TX)].as<int>();
+    if (t <= MAX_GPIO && r >0){
+        SETPARAM(FPSTR(V_TX));
+    } else return;
+
+    espem->begin(embui.paramVariant(FPSTR(V_UART)), embui.paramVariant(FPSTR(V_RX)), embui.paramVariant(FPSTR(V_TX)));
+    // display main page
+    if (interf) block_page_main(interf, nullptr);
 }

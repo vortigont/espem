@@ -10,9 +10,9 @@
 
 #define FW_NAME "espem"
 
-#define FW_VERSION_MAJOR     2
+#define FW_VERSION_MAJOR     3
 #define FW_VERSION_MINOR     0
-#define FW_VERSION_REVISION  1
+#define FW_VERSION_REVISION  0
 
 /* make version as integer*/
 #define FW_VERSION ((FW_VERSION_MAJOR) << 16 | (FW_VERSION_MINOR) << 8 | (FW_VERSION_REVISION))
@@ -31,7 +31,6 @@
 #include "globals.h"    // EmbUI macro's for LOG
 #include "config.h"
 #include "uistrings.h"  // non-localized text-strings
-#include "ui_i18n.h"    // localized GUI text-strings
 #include <ESPAsyncWebServer.h>
 
 #ifdef ESP8266

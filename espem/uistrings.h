@@ -10,10 +10,11 @@ static const char C_js[] PROGMEM = "js";
 //////////////////////
 // Configuration variables names  - V_ prefix for 'Variable'
 static const char V_EPOOLSIZE[] = "emplsz";             // metrics collector mem pool size, KiB
+static const char V_SMPL_PERIOD[] = "ems_prd";             // metrics collector mem pool size, KiB
 // directly changed vars
 static const char V_EPOLLENA[] PROGMEM = "dctlpoll";        // Enable/disable poller
 static const char V_EPFFIX[] PROGMEM = "dctlpffix";         // PowerFactor value correction
-static const char V_EPOLLRT[] = "dctlpllrt";            // Metrics collector pollrate
+static const char V_UI_UPDRT[] = "dctlupdrt";               // UI update rate
 static const char V_ECOLLECTORSTATE[] = "dctlmtrx";	        // Metrics collector run/pause
 static const char V_SMPLCNT[] = "dctlscnt";	                // Metrics graph - number of samples to draw in a small power chart
 
@@ -29,9 +30,7 @@ static const char A_DIRECT_CTL[] PROGMEM = "dctl*";         // checkboxes/contro
 
 
 // UI handlers - A_ prefix for 'Action'
-static const char A_UPD_WEATHER[] PROGMEM = "a_updw";       //  weather data refresh
-static const char A_SET_WEATHER[] PROGMEM = "a_setwth";     //  weather settings set 
-static const char A_SET_ESPEM[] PROGMEM = "a_setem";       //  Matrix settings set 
+static const char A_SET_ESPEM[] PROGMEM = "a_setem";       //  ESPEM settings update 
 
 
 // other constants

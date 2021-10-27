@@ -16,28 +16,38 @@
 #endif
 
 // sprintf template for json sampling data
-#define JSON_SMPL_LEN 80    // {"t":1615496537000,"U":229.50,"I":1.47,"P":1216,"W":5811338,"pF":0.64},
-static const char PGsmpljsontpl[] PROGMEM = "{\"t\":%llu000,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"pF\":%.2f},";
-static const char PGdatajsontpl[] PROGMEM = "{\"age\":%lu,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"pF\":%.2f}";
+#define JSON_SMPL_LEN 85    // {"t":1615496537000,"U":229.50,"I":1.47,"P":1216,"W":5811338,"hz":50.0,"pF":0.64},
+static const char PGsmpljsontpl[] PROGMEM = "{\"t\":%u000,\"U\":%.2f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f},";
+static const char PGdatajsontpl[] PROGMEM = "{\"age\":%llu,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f}";
 
 // HTTP responce messages
 static const char PROGMEM PGsmpld[] = "Metrics collector disabled";
 static const char PROGMEM PGdre[] = "Data read error";
 static const char PROGMEM PGacao[] = "Access-Control-Allow-Origin";
 
+using namespace pzmbus;     // use general pzem abstractions
+
 
 bool ESPEM::begin(){
 
-  meter = std::make_shared<PMETER>(ecfg.ip);     // Connect to PZEM via HW_serial
+  qport = new UartQ(PZEM_UART_PORT, RX_PIN, TX_PIN);
 
-  meter->pffix = ecfg.PFfix;
+  pz = new PZ004(PZEM_ID, ADDR_ANY);
 
-  meter->begin();
+  pz->attachMsgQ(qport);
 
-//  if (ecfg.mempool && ecfg.collector){
-    metrics = std::unique_ptr<PMETRICS>(new PMETRICS(meter, ecfg.mempool, ecfg.pollrate, ecfg.poll, (bool)ecfg.collector));
-//  }
-  metrics->setPollCallback(std::bind(&ESPEM::wspublish, this));
+  qport->startQueues();
+
+  // WebUI updater task
+  t_uiupdater.set( DEFAULT_WS_UPD_RATE * TASK_SECOND, TASK_FOREVER, std::bind(&ESPEM::wspublish, this) );
+  ts.addTask(t_uiupdater);
+
+  if (pz->autopoll(true)){
+    t_uiupdater.restartDelayed();
+    LOG(println, "Autopolling enabled");
+  } else {
+      LOG(println, "Sorry, can't autopoll somehow :(");
+  }
 
   embui.server.on(PSTR("/getdata"), HTTP_GET, [this](AsyncWebServerRequest *request){
     wdatareply(request);
@@ -52,18 +62,6 @@ bool ESPEM::begin(){
   embui.server.on(PSTR("/samples"), HTTP_GET, std::bind(&ESPEM::wsamples, this, std::placeholders::_1));
   embui.server.on(PSTR("/samples.json"), HTTP_GET, std::bind(&ESPEM::wsamples, this, std::placeholders::_1));
 
-/*
-  embui.server.on(PSTR("/getdata"), HTTP_GET, [this](AsyncWebServerRequest *request){
-    //AsyncWebServerResponse *response = request->beginResponse(307, FPSTR(PGmimetxt), "Hello World!");
-    AsyncWebServerResponse *response = request->beginResponse(307);
-    response->addHeader(F("Retry-After"),F("5"));
-    response->addHeader(F("Location"),F("/getpmdata"));
-    request->send(response);
-
-    //request->send(200, FPSTR(PGmimetxt), mktxtdata(data) );
-  });
-*/
-
   return true;
 }
 
@@ -73,32 +71,24 @@ bool ESPEM::begin(){
 String& ESPEM::mktxtdata ( String& txtdata) {
 
     //pmeterData pdata = meter->getData();
+    const auto m = pz->getMetricsPZ004();
+
     txtdata = "U:";
-    txtdata += meter->getData().voltage;
+    txtdata += m->voltage/10;
     txtdata += " I:";
-    txtdata += meter->getData().current;
+    txtdata += m->current/1000;
     txtdata += " P:";
-    txtdata += meter->getData().power;
+    txtdata += m->asFloat(meter_t::pwr);
     txtdata += " W:";
-    txtdata += meter->getData().energy;
+    txtdata += m->asFloat(meter_t::enrg);
 //    txtdata += " pf:";
 //    txtdata += pfcalc(meter->getData().meterings);
     return txtdata;
 }
 
-// calculate PowerFactor from UIP values
-float ESPEM::pfcalc(const float result[]) {
-  // result[] must be an array of UIP
-  // PF = P / UI
-  if (result[0] == 0 || result[1] == 0) return 0.0;
-  return( result[2] / result[0] / result[1]);
-}
-
-// pmdata web-page
-// Returns an http-response with Powermeter data from pdata struct
 // compat method for v 1.x cacti scripts
 void ESPEM::wpmdata(AsyncWebServerRequest *request) {
-  if ( !meter ) {
+  if ( !tsc.getTScnt() ) {
     request->send(503, FPSTR(PGmimetxt), FPSTR(PGdre) );
     return;
   }
@@ -109,19 +99,22 @@ void ESPEM::wpmdata(AsyncWebServerRequest *request) {
 
 
 void ESPEM::wdatareply(AsyncWebServerRequest *request){
-  if ( !meter ) {
+/*
+  if ( !tsc.getTScnt() ) {
     request->send_P(503, PGmimetxt, PGdre );
     return;
   }
-
+*/
+  const auto m = pz->getMetricsPZ004();
   char buffer[JSON_SMPL_LEN];
   sprintf_P(buffer, PGdatajsontpl,
-            millis() - meter->getLastPollTime(),
-            meter->getData().voltage,
-            meter->getData().current,
-            meter->getData().power,
-            meter->getData().energy,
-            meter->getData().pf()
+            pz->getState()->dataAge(),
+            m->asFloat(meter_t::vol),
+            m->asFloat(meter_t::cur),
+            m->asFloat(meter_t::pwr),
+            m->asFloat(meter_t::enrg),
+            m->asFloat(meter_t::frq),
+            m->asFloat(meter_t::pf)
   );
   request->send(200, FPSTR(PGmimejson), buffer );
 }
@@ -131,70 +124,74 @@ void ESPEM::wdatareply(AsyncWebServerRequest *request){
 void ESPEM::wsamples(AsyncWebServerRequest *request) {
 
   // check if there is any sampled data
-  if ( !getMetricsCap() ) {
-    request->send_P(503, PGmimetxt, PGsmpld);
+  if ( !tsc.getTScnt() ) {
+    request->send_P(503, PGmimejson, "[]");
     return;
   }
 
   // json response maybe pretty large and needs too much of a precious ram to store it in a temp 'string'
-  // So I'm going to generate it on-the-fly and stream to client with chunks
+  // So I'm going to generate it on-the-fly and stream to client in chunks
 
-  size_t sampleIndex = 0;   // index pointer to keep track of chuncked data in replies
-  size_t  cnt = 0;    // cnt - return last 'cnt' samples, 0 - all samples
+  size_t cnt = 0;           // cnt - return last 'cnt' samples, 0 - all samples
 
-  if (request->hasParam(F("scntr"))){
-    AsyncWebParameter* p = request->getParam(F("scntr"));
+  if (request->hasParam("scntr")){
+    AsyncWebParameter* p = request->getParam("scntr");
     if (!p->value().isEmpty())
       cnt = p->value().toInt();
   }
 
+
+  const auto ts = tsc.getTS(ts_id);
+  auto iter = ts->cbegin();   // get const iterator
+
+  // set number of samples to send in responce
+  if (cnt > 0 && cnt < ts->getSize())
+    iter += ts->getSize() - cnt;                    // offset iterator to the last cnt elements
+
+  LOG(printf, "TimeSeries buffer has %d items, scntr: %d\n", ts->getSize(), cnt);
+
   AsyncWebServerResponse* response = request->beginChunkedResponse(FPSTR(PGmimejson),
-                                  [this, sampleIndex, cnt](uint8_t* buffer, size_t buffsize, size_t index) mutable -> size_t {
+                                  [this, iter, ts](uint8_t* buffer, size_t buffsize, size_t index) mutable -> size_t {
 
       // If provided bufer is not large enough to fit 1 sample chunk, than I'm just sending
-      // an empty space char (allowed json symbol) and wait for the next buffer
+      // an empty white space char (allowed json symbol) and wait for the next buffer
       if (buffsize < JSON_SMPL_LEN){
-        buffer[0] = 0x20; // ASCII 'Space'
+        buffer[0] = 0x20; // ASCII 'white space'
         return 1;
       }
 
       size_t len = 0;
 
-      const std::vector<pmeterData> *samples = metrics->getData();
-
-      // set number of samples to send in responce
-      if (!cnt || cnt > samples->capacity())
-        cnt = samples->capacity();
-
-      if (!sampleIndex){
+      if (!index){
         buffer[0] = 0x5b;   // Open json with ASCII '['
         ++len;
-        sampleIndex = samples->capacity() - cnt;  // shift index to the last n'th sample as requested
       }
-
-      time_t meter_time = embui.timeProcessor.getUnixTime() - (millis() - meter->getLastPollTime())/1000;  // find out timestamp for last sample
-      // todo: need to handle variable interval between samples
 
       // prepare a chunk of sampled data wrapped in json
-      while (len < (buffsize - JSON_SMPL_LEN) && sampleIndex != samples->capacity()){
-        size_t idx = (metrics->getMetricsIdx() + sampleIndex) % samples->capacity();
-        len += sprintf_P((char *)buffer + len, PGsmpljsontpl,
-                    meter_time - ecfg.pollrate * (samples->capacity() - sampleIndex),
-                    samples->at(idx).voltage,
-                    samples->at(idx).current,
-                    samples->at(idx).power,
-                    samples->at(idx).energy,
-                    pfcalc(samples->at(idx).meterings)
-                    );
+      while (len < (buffsize - JSON_SMPL_LEN) && iter != ts->cend()){
 
-        ++sampleIndex;
+        if (iter.operator->() != nullptr){
+          // obtain a copy of a struct (.asFloat() member method crashes for dereferenced obj - TODO: investigate)
+          pz004::metrics m = *iter.operator->();
 
-        if (sampleIndex == samples->capacity()){
-          buffer[len-1] = 0x5d;   // ASCII ']' implaced over last comma
+          len += sprintf((char *)buffer + len, PGsmpljsontpl,
+                    ts->getTstamp() - (ts->cend() - iter) * ts->getInterval(),  // timestamp
+                    m.asFloat(meter_t::vol),
+                    m.asFloat(meter_t::cur),
+                    m.asFloat(meter_t::pwr),
+                    m.asFloat(meter_t::enrg),
+                    m.asFloat(meter_t::frq),
+                    m.asFloat(meter_t::pf)
+          );
+        } else {
+            LOG(println, "SMLP pointer is null");
         }
+
+        if (++iter == ts->cend())
+          buffer[len-1] = 0x5d;   // ASCII ']' implaced over last comma
       }
 
-      //LOG(printf, "JSON: Sending %d items, buffer %d/%d, idx: %d\n", cnt, len, buffsize, sampleIndex);
+      LOG(printf, "Sending timeseries JSON, buffer %d/%d, items left: %d\n", len, buffsize, ts->cend() - iter);
       return len;
   });
 
@@ -204,150 +201,88 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
 
 // publish meter data via WebSocket
 void ESPEM::wspublish(){
-  if (!embui.ws.count())  // if there are no clients connected
+  if (!embui.ws.count())  // exit, if there are no clients connected
       return;
 
   Interface *interf = new Interface(&embui, &embui.ws, 512);
 
+  const auto m = pz->getMetricsPZ004();
+
   interf->json_frame_custom(F("rawdata"));
-  interf->value(F("U"), meter->getData().voltage);
-  interf->value(F("I"), meter->getData().current);
-  interf->value(F("P"), meter->getData().power);
-#ifdef USE_PZEMv3
-  interf->value(F("W"), meter->getData().energy);
-#else
-  interf->value(F("W"), meter->getData().energy/1000.0);
-#endif
-  interf->value(F("Pf"), meter->getData().pf());
+  interf->value(F("U"), m->voltage/10);
+  interf->value(F("I"), m->asFloat(meter_t::cur));
+  interf->value(F("P"), m->asFloat(meter_t::pwr));
+  interf->value(F("W"), m->asFloat(meter_t::enrg)/1000);
+  interf->value(F("Pf"), m->asFloat(meter_t::pf));
   interf->json_frame_flush();
   delete interf;
 }
 
+uint8_t ESPEM::set_uirate(uint8_t seconds){
+  if (seconds){
+    t_uiupdater.setInterval(seconds * TASK_SECOND);
+    t_uiupdater.restartDelayed();
+  } else
+    t_uiupdater.disable();
 
+  return seconds;
+}
 
-/**********************   PMETRICS Methods **************/
+uint8_t ESPEM::get_uirate(){
+  if (t_uiupdater.isEnabled())
+    return (t_uiupdater.getInterval() / TASK_SECOND);
 
-/**
- * @brief - allocates memory pool for metrics data
- * @param size - pool size in KiB
- */
-size_t PMETRICS::poolAlloc(size_t size){
-  if (!size)
-    return 0;
-
-  LOG(printf_P, PSTR("PMETRICS: FreeHeap: %d, MaxFreeBlockSize: %d\n"), ESP.getFreeHeap(), MAX_FREE_MEM_BLK);
-
-  delete samples; // make sure it is free
-  if (size > MAX_FREE_MEM_BLK/1024 - ESPEM_MEMRESERVE)
-      size = MAX_FREE_MEM_BLK/1024 - ESPEM_MEMRESERVE;
-
-  samples = new std::vector<pmeterData>(size*1024 / sizeof(pmeterData));
-
-  if (samples){
-    LOG(printf_P, PSTR("Memory pool allocated for %d samples\n"), samples->capacity());
-    mcstate = mcstate_t::MC_RUN;
-    poolidx = 0;
-    return samples->capacity();
-  } else {
-    LOG(println, F("Memory pool allocation failed\n"));
-    mcstate = mcstate_t::MC_DISABLE;
-  }
   return 0;
 }
 
+bool ESPEM::tsSet(size_t size, uint32_t interval){
+  if (!size || !interval)
+    return false;
 
-/**
- * @brief - change collector state to DISABLE/RUN/PAUSE
- * @param newstate - new state
- */
-mcstate_t PMETRICS::collector(mcstate_t newstate){
-  switch(newstate){
-    case mcstate_t::MC_DISABLE : {
-      delete samples;
-      samples = nullptr;
-      mcstate = mcstate_t::MC_DISABLE;
+  tsc.purge();
+
+  ts_id = tsc.addTS(size, TimeProcessor::getInstance().getUnixTime(), interval, "TS_1");
+  //LOG.printf("Add TS: %d\n", sec);
+  //tsc.addTS(300, esp_timer_get_time() >> 20, 10, "per10sec", 2);
+  //tsc.addTS(300, esp_timer_get_time() >> 20, 60, "permin", 2);
+
+  LOG(printf, "SRAM: heap %d, free %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
+  LOG(printf, "SPI-RAM: heap %d, free %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+
+  return (bool)tsc.getTScap();
+}
+
+
+mcstate_t ESPEM::set_collector_state(mcstate_t state){
+
+  switch (state) {
+    case mcstate_t::MC_RUN : {
+      if (ts_state == mcstate_t::MC_RUN) return mcstate_t::MC_RUN;
+      if (!getMetricsCap()) tsSet();   // reinitialize TS Container if empty
+
+        // attach collector's callback
+        auto ref = &tsc;
+        pz->attach_rx_callback([this, ref](uint8_t id, const RX_msg* m){
+          // collect time-series data
+          if (!pz->getState()->dataStale()){
+            auto data = pz->getMetricsPZ004();
+            ref->push(*data, TimeProcessor::getInstance().getUnixTime());
+          }
+        });
+        ts_state = mcstate_t::MC_RUN;
       break;
     }
-    case mcstate_t::MC_PAUSE :
-      mcstate = newstate;
+    case mcstate_t::MC_PAUSE : {
+      pz->detach_rx_callback();
+      if (!getMetricsCap()) tsSet();   // reinitialize TS Container if empty
+      ts_state = mcstate_t::MC_PAUSE;
       break;
-    case mcstate_t::MC_RUN :
+    }
     default: {
-      if (mcstate_t::MC_DISABLE == mcstate){
-        poolAlloc(poolsize);
-      } else {
-        mcstate = mcstate_t::MC_RUN;
-      }
-      break;
+      pz->detach_rx_callback();
+      tsc.purge();
+      ts_state = mcstate_t::MC_DISABLE;
     }
   }
-  LOG(printf_P, PSTR("Collector state: %d\n"), (int)mcstate);
-  return mcstate;
-}
-
-
-/**
- * @brief - resize memory pool for metrics storage
- * @param size - desired new size
- * if new size is less than old - mem pool is shrinked, releasing memory (index pointer might change)
- * if the new size is more than old one - full reallocation is done, all current sampling data is lost!
- */
-size_t PMETRICS::poolResize(size_t size){
-
-  LOG(printf_P, PSTR("Requested metrics pool change to %d KiB\n"), size);
-  poolsize = size;
-
-  if (!size){
-    collector(mcstate_t::MC_DISABLE);
-    return 0;
-  }
-
-  if ( samples && (size*1024 < samples->capacity()*sizeof(pmeterData)) ){
-    LOG(printf_P, PSTR("Resizing metrics pool to fit %d samples\n"), size*1024 / sizeof(pmeterData));
-    samples->resize(size*1024 / sizeof(pmeterData));
-    samples->shrink_to_fit();
-    if (poolidx >= samples->capacity())
-      poolidx = 0;
-    LOG(printf_P, PSTR("New pool size: %d samples\n"), samples->capacity());
-    return samples->capacity();
-  } else {
-    return poolAlloc(size);
-  }
-}
-
-
-// poll meter for data and store sample in RAM ring buffer (if required)
-void PMETRICS::datapoller(){
-
-  if (!meter->poll())
-    return;
-  LOG(printf_P, PSTR("Meter poll: U:%.1f I:%.2f P:%.0f W:%.0f pf:%.2f\n"), meter->getData().voltage, meter->getData().current, meter->getData().power, meter->getData().energy, meter->getData().pf());
-
-  if ( mcstate == mcstate_t::MC_RUN && samples && samples->capacity() ){
-      samples->at(poolidx) = meter->getData();
-
-/*
-//exception handling disabled, use -fexceptions to enable
-      //std::copy(&pdata.meterings[0], &pdata.meterings[3], samples->at(poolidx).meterings);
-    try {}
-    catch (std::out_of_range o){
-      LOG(printf_P, PSTR("Exception: Vector out of range - %s"), o.what());
-    }
-*/
-    LOG(printf_P, PSTR("SMPL: %d out of %d\n"), poolidx+1, samples->capacity());
-    if ( ++poolidx == samples->capacity() )
-      poolidx=0;
-  };
-
-  if (_cb_poll)
-    _cb_poll();
-}
-
-/**
- * @brief - set meter poll rate in seconds
- * @param seconds - poll interval rate
- */
-size_t PMETRICS::PollInterval(uint16_t rate){
-  tPoller.setInterval(rate * TASK_SECOND);
-  return tPoller.getInterval() / 1000;
+  return ts_state;
 }

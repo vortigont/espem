@@ -43,7 +43,7 @@ void setup() {
   // Start framework, load config and connect WiFi
   embui.begin();
 
-
+/*
   // restore ESPEM defaults configuration
   ESPEM_CFG _cfg(embui.paramVariant(FPSTR(V_EPOLLRT)),
               embui.paramVariant(FPSTR(V_EPOOLSIZE)),
@@ -51,10 +51,18 @@ void setup() {
               embui.paramVariant(FPSTR(V_EPOLLENA)),
               (mcstate_t)embui.paramVariant(FPSTR(V_ECOLLECTORSTATE)).as<short>()
   );
+*/
 
   // create and run ESPEM object
-  espem = new ESPEM(_cfg);
-  espem->begin();
+  espem = new ESPEM();
+
+  if (espem && espem->begin()){
+    if ( espem->tsSet( embui.paramVariant(FPSTR(V_EPOOLSIZE)), embui.paramVariant(FPSTR(V_SMPL_PERIOD)) ) ){
+      espem->set_collector_state(mcstate_t::MC_RUN);
+    }
+  }
+
+
 
 
   embui.server.on(PSTR("/fw"), HTTP_GET, [](AsyncWebServerRequest *request){

@@ -10,3 +10,4 @@ user_config.h
 .gcc-flags.json
 user_*.ini
 resources/etags.txt
+tmp/

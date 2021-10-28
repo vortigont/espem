@@ -1,5 +1,5 @@
 // Default config options
-// do NOT change anything here, copy/rename 'default_config.h' into 'user_config.h' and change you options there
+// do NOT change anything here, copy 'config.h' into 'user_config.h' and change you options there
 
 #pragma once
 
@@ -11,24 +11,6 @@
 
 
 #define FW_NAME "espem"
-
-#define ESPEM_USE_HWSERIAL
-
-#ifndef HWSERIAL_PORT
-  #ifdef ESP8266
-    #define HWSERIAL_PORT UART0
-  #endif
-  #ifdef ESP32
-    #define HWSERIAL_PORT (2U)
-  #endif
-#endif
-
-#ifdef USE_PZEMv3
-  #define PZEM_LIB (PZEM004T)
-#else
-  #define PZEM_LIB (PZEM004Tv30)
-#endif
-
 
 // LOG macro's
 #if defined(LOG)

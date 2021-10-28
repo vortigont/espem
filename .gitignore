@@ -2,12 +2,13 @@
 .pioenvs
 .piolibdeps
 .vscode
-config.h
 user_config.h
 *.bin
 *.orig
 .clang_complete
 .gcc-flags.json
+mklittlefs
+mklittlefs.exe
 user_*.ini
 resources/etags.txt
 tmp/

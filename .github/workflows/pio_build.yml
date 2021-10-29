@@ -42,7 +42,9 @@ jobs:
         pip install --upgrade platformio
         pio update
     - name: Run PlatformIO
-      env: 
-        PLATFORMIO_CI_SRC: ${{ matrix.code }}
       run: |
-        pio ci -c ${{ matrix.code }}/platformio.ini
+        pio run -e espem -e espem_debug
+#      env: 
+#        PLATFORMIO_CI_SRC: ${{ matrix.code }}
+#      run: |
+#        pio ci -c ${{ matrix.code }}/platformio.ini

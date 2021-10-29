@@ -1,7 +1,7 @@
-## Energy monitor based on ESP8266/ESP32 controller and Peacefair PZEM-004T/PZEM-004Tv30 Power Meter
+## Energy monitor based on ESP32 controller and Peacefair PZEM-004Tv30 Power Meter
 
-A code for ESP8266/ESP32 controller and a set of web-tools to gather, analyse, monitor and view stat and graphs
-for [Peacefair](https://peacefair.aliexpress.com/store/1773456/) PZEM-004T/PZEM-004Tv30 PowerMeter.
+A code for ESP32 controller and a set of web-tools to gather, analyse, monitor and view stat and graphs
+for [Peacefair](https://peacefair.aliexpress.com/store/1773456/) PZEM-004Tv30 PowerMeter.
 
 __[BUILD](/espem/BUILD.md) | [USAGE](/espem/USAGE.md) | [CHANGELOG](/CHANGELOG.md)__
 
@@ -10,6 +10,24 @@ __[BUILD](/espem/BUILD.md) | [USAGE](/espem/USAGE.md) | [CHANGELOG](/CHANGELOG.m
 - Real-time gauges and power charts
 - metrics collector in controller's memory pool
 - data/metrics export via json
+
+
+## Legacy v2.x version
+An older ESPEM version 2 was based on 3rd party lib. It's code still available in [2.x branch](https://github.com/vortigont/espem/tree/v2)
+ESPEM firmware Version 3 switched to it's own library [pzem-edl](https://github.com/vortigont/pzem-edl). I wrote this lib to evercome limitations of the classic [olehs](https://github.com/olehs/PZEM004T)'s and [mandulaj](https://github.com/mandulaj/PZEM-004T-v30)'s libs. Being versatile those libs provided only basic functions talking to PZEM's using Arduino's blocking IO via serial port. New lib uses event-driven approach and provides extendable design API for multiple PZEM communication over single port.
+
+### Feature comparison
+|                |[Version 2.x](https://github.com/vortigont/espem/tree/v2)  |Version 3.0|
+|----------------|--------------|---------------|
+|ESP8266|YES     |NO            |
+|ESP32           |YES           |YES            |
+|PZEM004v30      |YES|YES|
+|old PZEMv30     |YES|NO (planned)|
+|PZEM017 (DC version)   |NO|NO (planned)|
+|3 phase option         |NO|YES (in progress)|
+|Time Series Charts     |YES (Basic)|YES (extendable)|
+|TS in SPI-RAM         |NO|YES|
+
 
 
 ### ESPEM WebUI Dashboard

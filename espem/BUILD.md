@@ -10,49 +10,48 @@ Steps to run:
  
 ### External Libs used to build/use the firmware
 - [EmbUI](https://github.com/vortigont/EmbUI) framework is used to construct Web interface, manage WiFi, store configuration, etc
-- [PZEM004T](https://github.com/olehs/PZEM004T) library to interact with PZEM power meter
+- [pzem-edl](https://github.com/vortigont/pzem-edl) event-driven library to interact with PZEM power meter
 - [FTPClientServer](https://github.com/charno/FTPClientServer) to access ESP's file system (optional)
 - [AmCharts](https://www.amcharts.com/) JavaScript Charts & Maps to draw gauges and charts
 
 
 ### Configuring and Building
-First, copy default config file `espem/default_config.h` to `espem/user_config.h` and change default options. There are not so many things to change there.
- - Choose either to use Hardware Serial port or SoftwareSerial pins by uncommenting `#define ESPEM_USE_HWSERIAL`. Detailed info about using HWSerial with ESP8266 could be found [here](https://github.com/olehs/PZEM004T/wiki/Connecting-PZEM-to-ESP8266).
- - Debuging might be enabled via `#define ESPEM_DEBUG Serial`
- - If using softwareSerial `#define PIN_RX` `#define PIN_TX`
+Most of the setup is done via WebUI. Once fw is flashed and FS image uploaded it is required to connect to the WiFI HotSpot and set WiFi options, TimeZone, and PZEM serial port/pins settings.
+Two platformio env's are provided to build:
 
-To build fw for espem8266 run:
+To build regular fw for esp32, just run:
 ```sh
 platformio run
 ```
-To build fw for espem8266 with PZEM-004Tv30 run:
+To build fw with debugging enabled, run:
 ```sh
-platformio run -e espem8266v30
+platformio run -e espem_debug
 ```
-To build espem8266 debug version, run:
-```sh
-platformio run -e espem8266debug
-```
-it will build fw with lot's of debug info being printer to the Hardware `Serial1` port.
-
-To build fw for ESP32 with PZEM-004Tv30 run:
-```sh
-platformio run -e esp32v30
-```
+Remember, you can't use serial0 for PZEM comm if build debug version. Default uart port is port_1. Any available esp32 pins could be mapped to port_1
 
 
 ### Making a LittleFS image file with web resources
-To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/vortigont/EmbUI) framework and js/css files for the ESPEM project. The is no prebuild image since it is hard to maintain it, instead there is a shell script that downloads required files from github, repacks it and places under `/data` directory. Tha directory is used to create and upload LittleFS image to the controller. Run
+To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/vortigont/EmbUI) framework and js/css files for the ESPEM project. There is no prebuild image since it is hard to maintain it, instead there is a shell script that downloads required files from github, repacks it and places under `/data` directory. That directory is used to create and upload LittleFS image to the controller. Run
 ```sh
 cd resources
 ./respack.sh
 ```
 It should populate `/data` dir with `js`, `css`, `index.html.gz`, etc...
 
-Now the FS image and firmware could be uploaded to the controller
+To upload LitlleFS image for ESP32 (until core v2 is out) it is required to use an uploader binary *mklittlefs*. Pls, download version for your OS from [here](https://github.com/earlephilhower/mklittlefs/releases) and put the binary to the root dir of the project.
+
+Now the FS image and firmware could be uploaded to the controller, just run
 ```sh
-platformio run -t uploadfs
 platformio run -t upload
+platformio run -t uploadfs
 ```
 
-That's it. Controller should reboot and enable WiFi. Look for the open Access point names like EmbUI-xxxx, connect to it and open WebUI http://192.168.4.1/, proceed with settings via WebUI.
+or debug version
+```sh
+platformio run -e espem_debug -t upload
+platformio run -e espem_debug -t uploadfs
+```
+
+
+
+That's it. Controller should reboot and enable WiFi. Look for the open Access point names like EmbUI-xxxx, connect to it and open WebUI http://192.168.4.1/, proceed with settings via WebUI. Check [USGE](USAGE.md) page for more details.

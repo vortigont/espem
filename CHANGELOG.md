@@ -1,6 +1,11 @@
 # Change Log
 
 ## current master
+ * switch to pzem-edl lib, version 2.x becomes legacy
+     - drop support for older PZEM004 model
+     - drop support for esp8266
+ * UART configuration via WebUI
+ * 1 level TimeSeries chart only (for now)
 
 ## v 2.0.1 (2021-09-03)
 + WebUI displays for Voltage, Current, Energy 

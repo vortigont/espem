@@ -1,6 +1,8 @@
 # Change Log
 
-## current master
+## current
+ * bump EmbUI version to 2.6
+ * set custom sdk to WA 802.11n connection
 
 ## v 2.0.1 (2021-09-03)
 + WebUI displays for Voltage, Current, Energy 

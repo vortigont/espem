@@ -1,6 +1,7 @@
 # Change Log
 
 ## current master
+ * bump EmbUI version up to v2.6
  * switch to pzem-edl lib, version 2.x becomes legacy
      - drop support for older PZEM004 model
      - drop support for esp8266
@@ -18,7 +19,7 @@
 ## v 2.0.0 (2021-04-12)
 
   Completely reworked project.
-    - UI switched to [EmbUI](https://github.com/DmytroKorniienko/EmbUI) framework
+    - UI switched to [EmbUI](https://github.com/vortigont/EmbUI) framework
     - embeded dashboard using websockets for real-time data/gauges updates
     - most of the build-time defines moved to WebUI controls
     

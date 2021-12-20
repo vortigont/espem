@@ -4,7 +4,7 @@ USAGE="Usage: `basename $0` [-h] [-t embuitag] [-f]"
 
 # embui branch/tag name to fetch
 embuirepo='https://github.com/vortigont/EmbUI'
-embuitag="v2.5"
+embuitag="v2.6"
 
 #####
 # no changes below this point!

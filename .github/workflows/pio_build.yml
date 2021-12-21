@@ -6,9 +6,9 @@ name: PlatformIO CI
 
 on:
   push:
-    branches: [ master, v2, pzedl ]
+    branches: [ master, v2 ]
   pull_request:
-    branches: [ master, v2, pzedl ]
+    branches: [ master, v2 ]
 
 jobs:
   build:

@@ -18,7 +18,7 @@ refresh_js=0
 embuijs_files='lib.js maker.js dyncss.js'
 
 # parse cmd options
-while getopts ht: OPT; do
+while getopts hft: OPT; do
     case "$OPT" in
         h)
             echo $USAGE

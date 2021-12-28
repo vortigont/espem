@@ -217,7 +217,7 @@ void block_page_espemset(Interface *interf, JsonObject *data){
 	 *   1: Running and storing metrics in RAM
 	 *   2: Paused, collecting but not storing, memory reserved 
 	 */
-    interf->select(FPSTR(V_ECOLLECTORSTATE), embui.param(FPSTR(V_ECOLLECTORSTATE)), F("Metrics collector status"), true, false);
+    interf->select(FPSTR(V_ECOLLECTORSTATE), (uint8_t)espem->get_collector_state(), F("Metrics collector status"), true, false);
     interf->option(0, F("Disabled"));
     interf->option(1, F("Running"));
     interf->option(2, F("Paused"));
@@ -292,7 +292,8 @@ void set_directctrls(Interface *interf, JsonObject *data){
             // reset TS Container if empty and we need to start it
             if (espem->get_collector_state() == mcstate_t::MC_DISABLE && new_state >0) espem->tsSet(embui.paramVariant(FPSTR(V_EPOOLSIZE)), embui.paramVariant(FPSTR(V_SMPL_PERIOD)));
 
-            embui.var(_k, (uint8_t)espem->set_collector_state((mcstate_t)new_state));
+            espem->set_collector_state((mcstate_t)new_state);
+            //embui.var(_k, (uint8_t)espem->set_collector_state((mcstate_t)new_state), true);   // no need to set this var, it's a run-time state
             LOG(printf_P, PSTR("UI: Set TS Collector state to: %d\n"), (int)espem->get_collector_state() );
             continue;
         }

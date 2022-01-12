@@ -114,11 +114,11 @@
 			<input type="hidden" id="{{id}}" name="{{id}}" value="{{value}}">
 		{{/if}}
 		{{#if html == "button"}}
-			<div id="{{id}}" {{#if2 color}}style="background-color: {{color}}"{{/if2}} class="pure-u-1 pure-button pure-button-primary mr"
+			<button id="{{id}}" {{#if2 color}}style="background-color: {{color}}"{{/if2}} class="pure-u-1 pure-button pure-button-primary mr"
 				{{#if2 type == 0}}{{onevent "click", "on_change", id, value}}{{/if2}}
 				{{#if2 type == 1}}{{onevent "click", "on_submit", id, value}}{{/if2}}
 				{{#if2 type == 2}}{{onevent "click", "on_js", id, value}}{{/if2}}
-			>{{label}}</div>
+			>{{label}}</button>
 		{{/if}}
 		{{#if html == "textarea"}}
 			<textarea class="pure-u-1" maxlength="255" id="{{id}}" name="{{id}}"
@@ -126,7 +126,7 @@
 			></textarea>
 		{{/if}}
 		{{#if html == "comment"}}
-			<div class="comment">{{label}}</div>
+			<div id="{{id}}" class="comment">{{label}}</div>
 		{{/if}}
 		{{#if html == "file"}}
 			<form method="POST" action="/{{action}}" enctype="multipart/form-data" class="pure-form pure-g mr">
@@ -158,7 +158,7 @@
 			<span>{{label}}</span>
 			{{#if2 type == "range" || type == "color"}}<span id="{{id}}-val">: {{value}}</span>{{/if2}}
 			{{#if2 type == "text" || type == "password"}}<span id="{{id}}-val"> ({{calc value.length || 0}})</span>{{/if2}}
-			<input type="{{type}}" id="{{id}}" name="{{id}}" class="pure-u-1" value="{{value}}"
+			<input type="{{type}}" id="{{id}}" name="{{id}}" class="pure-u-1 mr" value="{{value}}"
 				{{#if2 (min || min === 0)}}min="{{min}}"{{/if2}}
 				{{#if2 (max || max === 0)}}max="{{max}}"{{/if2}}
 				{{#if2 (step || step === 0)}}step="{{step}}"{{/if2}}

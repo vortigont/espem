@@ -41,5 +41,7 @@ If pool is enlarged than full reallocation is done, no previous data preserved.
 
 ### HTTP API
 `http://espem/getdata` - get current metrics (JSON format)
+
 `http://espem/samples.json` - get time-series data from in RAM circular buffer (JSON format)
+
 `http://espem/fw` - get firmware version info (JSON format)

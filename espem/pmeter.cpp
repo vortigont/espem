@@ -8,10 +8,9 @@
 
 #include "espem.h"
 
-
-void PMETER::begin(){
-  #ifdef ESPEM_USE_HWSERIAL
-      hwser = new HardwareSerial(HWSERIAL_PORT);
+#if defined (USE_PZEMv3) && !defined (PIN_RX)
+#error "Mandulay's PZEMv30 lib requires RX/TX pins to be specified for esp32"
+#endif
 
 // PZEM and PZEMv3 libs have different constructors
 #ifdef USE_PZEMv3
@@ -19,6 +18,10 @@ void PMETER::begin(){
 #else
 #define PORT hwser
 #endif
+
+void PMETER::begin(){
+  #ifdef ESPEM_USE_HWSERIAL
+      hwser = new HardwareSerial(HWSERIAL_PORT);
 
     #if defined(ESP32)
       #if defined (PIN_RX) && defined (PIN_TX)

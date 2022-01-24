@@ -14,8 +14,8 @@
 /* ***** SoftWare Serial is deprecated *****
    it might still work flawlessly but no longer supported
 
-*/ Uncomment this to use Software Serial pins to connect to PZEM
-/*
+   Uncomment this to use Software Serial pins to connect to PZEM
+
 #ifdef ESPEM_USE_HWSERIAL
  #undef ESPEM_USE_HWSERIAL
 #endif

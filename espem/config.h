@@ -23,12 +23,14 @@
   #endif
 #endif
 
-#ifdef USE_PZEMv3
-  #define PZEM_LIB (PZEM004T)
-#else
-  #define PZEM_LIB (PZEM004Tv30)
+// ESP32/SoftSerial pins
+#ifndef PIN_RX
+#define PIN_RX  22
 #endif
 
+#ifndef PIN_TX
+#define PIN_TX  17
+#endif
 
 // LOG macro's
 #if defined(LOG)

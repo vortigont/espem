@@ -13,14 +13,21 @@ void PMETER::begin(){
   #ifdef ESPEM_USE_HWSERIAL
       hwser = new HardwareSerial(HWSERIAL_PORT);
 
+// PZEM and PZEMv3 libs have different constructors
+#ifdef USE_PZEMv3
+#define PORT *hwser
+#else
+#define PORT hwser
+#endif
+
     #if defined(ESP32)
       #if defined (PIN_RX) && defined (PIN_TX)
-        pzem = std::unique_ptr<PZEM>(new PZEM(hwser, PIN_RX, PIN_TX));  // Connect to PZEM via HW_serial
+        pzem = std::unique_ptr<PZEM>(new PZEM(PORT, PIN_RX, PIN_TX));  // Connect to PZEM via HW_serial
       #else
-        pzem = std::unique_ptr<PZEM>(new PZEM(hwser));  // Connect to PZEM via HW_serial
+        pzem = std::unique_ptr<PZEM>(new PZEM(PORT));  // Connect to PZEM via HW_serial
       #endif
     #else // ESP8266
-      pzem = std::unique_ptr<PZEM>(new PZEM(hwser));  // Connect to PZEM via HW_serial
+      pzem = std::unique_ptr<PZEM>(new PZEM(PORT));  // Connect to PZEM via HW_serial
     #endif
 
     #if defined ESPEM_HWSERIAL_SWAP && defined ESP8266

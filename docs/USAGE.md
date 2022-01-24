@@ -38,3 +38,8 @@ If pool is enlarged than full reallocation is done, no previous data preserved.
 `Paused` - mem pool allocated but polled values are not saved in buffer
 
 `Disabled` - No memory pool allocated, only the last polled value is kept in memory
+
+### HTTP API
+`http://espem/getdata` - get current metrics (JSON format)
+`http://espem/samples.json` - get time-series data from in RAM circular buffer (JSON format)
+`http://espem/fw` - get firmware version info (JSON format)

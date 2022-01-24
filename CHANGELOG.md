@@ -1,6 +1,6 @@
 # Change Log
 
-## current master
+## v 3.0.0 (2022-01-24)
  * bump EmbUI version up to v2.6
  * switch to pzem-edl lib, version 2.x becomes legacy
      - drop support for older PZEM004 model

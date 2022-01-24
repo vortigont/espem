@@ -1,4 +1,4 @@
-__[BUILD](/espem/BUILD.md) | [USAGE](/espem/USAGE.md) | [CHANGELOG](/CHANGELOG.md)__ | [![PlatformIO CI](https://github.com/vortigont/espem/actions/workflows/pio_build.yml/badge.svg)](https://github.com/vortigont/espem/actions/workflows/pio_build.yml)
+__[BUILD](/docs/BUILD.md) | [USAGE](/docs/USAGE.md) | [CHANGELOG](/CHANGELOG.md)__ | [![PlatformIO CI](https://github.com/vortigont/espem/actions/workflows/pio_build.yml/badge.svg)](https://github.com/vortigont/espem/actions/workflows/pio_build.yml)
 ## Energy monitor based on ESP32 controller and Peacefair PZEM-004Tv30 Power Meter
 
 A code for ESP32 controller and a set of web-tools to gather, analyse, monitor and view stat and graphs
@@ -19,10 +19,10 @@ ESPEM Ver 3 switched to it's own library [pzem-edl](https://github.com/vortigont
 ### Feature comparison
 |                |[Version 2.x](https://github.com/vortigont/espem/tree/v2)  |Version 3.0|
 |----------------|--------------|---------------|
-|ESP8266|YES     |NO            |
+|ESP8266         |YES           |NO             |
 |ESP32           |YES           |YES            |
-|PZEM004v30      |YES|YES|
-|old PZEMv30     |YES|NO (planned)|
+|PZEM004v30      |YES           |YES            |
+|old PZEMv30     |YES           |NO (planned)   |
 |PZEM017 (DC version)   |NO|NO (planned)|
 |3 phase option         |NO|YES (in progress)|
 |Time Series Charts     |YES (Basic)|YES (extendable)|

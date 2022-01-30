@@ -50,6 +50,7 @@ void setup() {
     if ( espem->tsSet( embui.paramVariant(FPSTR(V_EPOOLSIZE)), embui.paramVariant(FPSTR(V_SMPL_PERIOD)) ) ){
       espem->set_collector_state(mcstate_t::MC_RUN);
     }
+    espem->setEnergyOffset(embui.paramVariant(FPSTR(V_EOFFSET)));
   }
 
   embui.server.on(PSTR("/fw"), HTTP_GET, [](AsyncWebServerRequest *request){

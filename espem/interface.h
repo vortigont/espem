@@ -10,9 +10,10 @@ void block_page_espemset(Interface *interf, JsonObject *data);
 
 //  ACTIONS
 void action_demopage(Interface *interf, JsonObject *data);
-void set_espem_opts(Interface *interf, JsonObject *data);
+void set_sampler_opts(Interface *interf, JsonObject *data);
 void set_directctrls(Interface *interf, JsonObject *data);
 void set_uart_opts(Interface *interf, JsonObject *data);
+void set_pzopts(Interface *interf, JsonObject *data);
 
 // Callbacks
 void pubCallback(Interface *interf);

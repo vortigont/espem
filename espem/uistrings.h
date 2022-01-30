@@ -9,11 +9,12 @@ static const char C_js[] PROGMEM = "js";
 
 //////////////////////
 // Configuration variables names  - V_ prefix for 'Variable'
-static const char V_EPOOLSIZE[] = "emplsz";             // metrics collector mem pool size, KiB
-static const char V_SMPL_PERIOD[] = "ems_prd";             // metrics collector mem pool size, KiB
-static const char V_RX[] = "rx";             // metrics collector mem pool size, KiB
-static const char V_TX[] = "tx";             // metrics collector mem pool size, KiB
-static const char V_UART[] = "uart";         // metrics collector mem pool size, KiB
+static const char V_EPOOLSIZE[] = "emplsz";             // sample pool size
+static const char V_SMPL_PERIOD[] = "ems_prd";          // sampling period
+static const char V_RX[] = "rx";             // rx pin
+static const char V_TX[] = "tx";             // tx ping
+static const char V_UART[] = "uart";         // uart interface
+static const char V_EOFFSET[] = "eoffset";   // energy offset
 
 // directly changed vars
 static const char V_EPOLLENA[] PROGMEM = "dctlpoll";        // Enable/disable poller
@@ -36,6 +37,6 @@ static const char A_DIRECT_CTL[] PROGMEM = "dctl*";         // checkboxes/contro
 // UI handlers - A_ prefix for 'Action'
 static const char A_SET_ESPEM[] PROGMEM = "a_setem";       //  ESPEM settings update 
 static const char A_SET_UART[] PROGMEM =  "a_uart";
-
+static const char A_SET_PZOPTS[] PROGMEM =  "a_pzopt";
 
 // other constants

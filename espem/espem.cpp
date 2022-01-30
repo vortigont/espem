@@ -98,7 +98,7 @@ String& ESPEM::mktxtdata ( String& txtdata) {
     txtdata += " I:";
     txtdata += m->current/1000;
     txtdata += " P:";
-    txtdata += m->asFloat(meter_t::pwr);
+    txtdata += m->asFloat(meter_t::pwr) + nrg_offset;
     txtdata += " W:";
     txtdata += m->asFloat(meter_t::enrg);
 //    txtdata += " pf:";
@@ -129,7 +129,7 @@ void ESPEM::wdatareply(AsyncWebServerRequest *request){
             m->asFloat(meter_t::vol),
             m->asFloat(meter_t::cur),
             m->asFloat(meter_t::pwr),
-            m->asFloat(meter_t::enrg),
+            m->asFloat(meter_t::enrg) + nrg_offset,
             m->asFloat(meter_t::frq),
             m->asFloat(meter_t::pf)
   );
@@ -196,7 +196,7 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
                     m.asFloat(meter_t::vol),
                     m.asFloat(meter_t::cur),
                     m.asFloat(meter_t::pwr),
-                    m.asFloat(meter_t::enrg),
+                    m.asFloat(meter_t::enrg) + nrg_offset,
                     m.asFloat(meter_t::frq),
                     m.asFloat(meter_t::pf)
           );
@@ -229,7 +229,7 @@ void ESPEM::wspublish(){
   interf->value(F("U"), m->voltage/10);
   interf->value(F("I"), m->asFloat(meter_t::cur));
   interf->value(F("P"), m->asFloat(meter_t::pwr));
-  interf->value(F("W"), m->asFloat(meter_t::enrg)/1000);
+  interf->value(F("W"), (m->asFloat(meter_t::enrg) + nrg_offset) / 1000);
   interf->value(F("Pf"), m->asFloat(meter_t::pf));
   interf->json_frame_flush();
   delete interf;

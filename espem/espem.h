@@ -123,12 +123,30 @@ public:
     mcstate_t set_collector_state(mcstate_t state);
     mcstate_t get_collector_state() const { return ts_state; };
 
+    /**
+     * @brief Set the Energy offset value
+     * tis will offset energy value replies from PZEM
+     * i.e. to match some other counter, etc...
+     * 
+     * @param offset 
+     */
+    inline void setEnergyOffset(float offset){ nrg_offset = offset; };
+
+    /**
+     * @brief Get the Energy offset value
+     * 
+     * @return float 
+     */
+    inline float getEnergyOffset(){return nrg_offset;};
+
 private:
 
     UartQ *qport = nullptr;
     TSContainer<pz004::metrics> tsc;
     uint8_t ts_id;
     mcstate_t ts_state = mcstate_t::MC_DISABLE;
+
+    float nrg_offset{0.0};
 
     String& mktxtdata ( String& txtdata);
 

@@ -32,6 +32,9 @@ void create_parameters(){
     embui.var_create(FPSTR(V_UART), 0x1);                           // default UART port UART_NUM_1
     embui.var_create(FPSTR(V_RX), -1);                              // RX pin (default)
     embui.var_create(FPSTR(V_TX), -1);                              // TX pin (default)
+    embui.var_create(FPSTR(V_TX), -1);                              // TX pin (default)
+    embui.var_create(FPSTR(V_EOFFSET), 0.0);                        // Energy counter offset
+
 
     //Metrics collector run/pause
     //embui.var_create(FPSTR(V_ECOLLECTORSTATE), 1);                  // Collector state
@@ -51,8 +54,9 @@ void create_parameters(){
 
 
     // активности
-    embui.section_handle_add(FPSTR(A_SET_ESPEM),  set_espem_opts);
+    embui.section_handle_add(FPSTR(A_SET_ESPEM),  set_sampler_opts);
     embui.section_handle_add(FPSTR(A_SET_UART),   set_uart_opts);
+    embui.section_handle_add(FPSTR(A_SET_PZOPTS),   set_pzopts);
 
     // direct controls
     embui.section_handle_add(FPSTR(A_DIRECT_CTL),  set_directctrls);             // process direct update controls
@@ -194,6 +198,14 @@ void block_page_espemset(Interface *interf, JsonObject *data){
     interf->button_submit(FPSTR(A_SET_UART), FPSTR(T_DICT[lang][TD::D_Apply]), F("blue"));
     interf->json_section_end();     // end of "uart"
 
+    // counter opts
+    interf->spacer(F("Energy counter options"));
+    interf->json_section_begin(FPSTR(A_SET_PZOPTS));
+    interf->number(FPSTR(V_EOFFSET), espem->getEnergyOffset(), "Energy counter offset");
+    interf->button_submit(FPSTR(A_SET_PZOPTS), FPSTR(T_DICT[lang][TD::D_Apply]), F("blue"));
+    interf->json_section_end();     // end of "energy"
+
+
 
     interf->spacer(F("Metrics collector options"));
     String _msg(F("Metrics pool capacity: "));
@@ -240,7 +252,7 @@ void pubCallback(Interface *interf){
 /**
  *  Apply espem options values
  */
-void set_espem_opts(Interface *interf, JsonObject *data){
+void set_sampler_opts(Interface *interf, JsonObject *data){
     if (!data) return;
 
     SETPARAM(FPSTR(V_EPOOLSIZE));
@@ -336,6 +348,22 @@ void set_uart_opts(Interface *interf, JsonObject *data){
     } else return;
 
     espem->begin(embui.paramVariant(FPSTR(V_UART)), embui.paramVariant(FPSTR(V_RX)), embui.paramVariant(FPSTR(V_TX)));
+    // display main page
+    if (interf) block_page_main(interf, nullptr);
+}
+
+/**
+ * @brief Set pzem opts
+ * 
+ * @param interf 
+ * @param data 
+ */
+void set_pzopts(Interface *interf, JsonObject *data){
+    if (!data) return;
+
+    SETPARAM(FPSTR(V_EOFFSET));
+    espem->setEnergyOffset(embui.paramVariant(FPSTR(V_EOFFSET)));
+
     // display main page
     if (interf) block_page_main(interf, nullptr);
 }

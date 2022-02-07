@@ -1,5 +1,8 @@
 # Change Log
 
+* UI now can detect if PZEM is disconnected or unreachable and show "err" values
++ energy offset feature
+
 ## v 3.0.0 (2022-01-24)
  * bump EmbUI version up to v2.6
  * switch to pzem-edl lib, version 2.x becomes legacy

@@ -216,7 +216,7 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
   request->send(response);
 }
 
-// publish meter data via WebSocket
+// publish meter data via WebSocket (a periodic Task)
 void ESPEM::wspublish(){
   if (!embui.ws.count() || !pz)  // exit, if there are no clients connected
       return;
@@ -226,6 +226,10 @@ void ESPEM::wspublish(){
   const auto m = pz->getMetricsPZ004();
 
   interf->json_frame_custom(F("rawdata"));
+
+  interf->value(F("stale"), pz->getState()->dataStale(), false);
+  interf->value(F("age"), pz->getState()->dataAge());
+
   interf->value(F("U"), m->voltage/10);
   interf->value(F("I"), m->asFloat(meter_t::cur));
   interf->value(F("P"), m->asFloat(meter_t::pwr));

@@ -292,6 +292,9 @@ mcstate_t ESPEM::set_collector_state(mcstate_t state){
             auto data = pz->getMetricsPZ004();
             ref->push(*data, TimeProcessor::getInstance().getUnixTime());
           }
+          #ifdef ESPEM_DEBUG
+            msgdebug(id, m);          // it will print every data packet coming from PZEM
+          #endif
         });
         ts_state = mcstate_t::MC_RUN;
       break;
@@ -310,3 +313,15 @@ mcstate_t ESPEM::set_collector_state(mcstate_t state){
   }
   return ts_state;
 }
+
+
+void msgdebug(uint8_t id, const RX_msg* m){
+    Serial.printf("\nCallback triggered for PZEM ID: %d\n", id);
+
+/*
+    It is also possible to work directly on a raw data from PZEM
+    let's call for a little help here and use a pretty_printer() function
+    that parses and prints RX_msg to the stdout
+*/
+    pz004::rx_msg_prettyp(m);
+}   

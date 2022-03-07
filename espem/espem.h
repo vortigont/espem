@@ -165,3 +165,12 @@ private:
     //String& mkjsondata( const float result[], const unsigned long tstamp, String& jsn, const bool W );
 
 };
+
+
+/**
+ * @brief callback method to print debug data on PZEM RX
+ * 
+ * @param id 
+ * @param m 
+ */
+void msgdebug(uint8_t id, const RX_msg* m);

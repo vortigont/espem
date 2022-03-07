@@ -21,11 +21,7 @@ extern "C" int clock_gettime(clockid_t unused, struct timespec *tp);
 
 // PROGMEM strings
 // sprintf template for json version data
-#ifdef ESP8266
-static const char PGverjson[] PROGMEM = "{\"ChipID\":\"%x\",\"Flash\":%u,\"Core\":\"%s\",\"SDK\":\"%s\",\"firmware\":\"" FW_NAME "\",\"version\":\"" FW_VERSION_STRING "\",\"git\":\"%s\",\"CPUMHz\":%u,\"Heap\":%u,\"Uptime\":%u}";
-#elif defined ESP32
-static const char PGverjson[] PROGMEM = "{\"ChipID\":\"%s\",\"Flash\":%u,\"SDK\":\"%s\",\"firmware\":\"" FW_NAME "\",\"version\":\"" FW_VERSION_STRING "\",\"git\":\"%s\",\"CPUMHz\":%u,\"Heap\":%u,\"Uptime\":%u}";
-#endif
+static const char PGverjson[] = "{\"ChipID\":\"%s\",\"Flash\":%u,\"SDK\":\"%s\",\"firmware\":\"" FW_NAME "\",\"version\":\"" FW_VERSION_STRING "\",\"git\":\"%s\",\"CPUMHz\":%u,\"RAM Heap\":%u,%u,\"PSRAM Heap\":%u,%u,\"Uptime\":%u}";
 
 // Our instance of espem
 ESPEM *espem = nullptr;
@@ -67,10 +63,8 @@ void setup() {
   embui.setPubInterval(WEBUI_PUBLISH_INTERVAL);
 }
 
-
 // MAIN loop
 void loop() {
-
   embui.handle();
 
 #ifdef USE_FTP
@@ -84,21 +78,6 @@ void wver(AsyncWebServerRequest *request) {
 
   timespec tp;
   clock_gettime(0, &tp);
-#ifdef ESP8266
-  snprintf_P(buff, sizeof(buff), PGverjson,
-    ESP.getChipId(),
-    ESP.getFlashChipSize(),
-    ESP.getCoreVersion().c_str(),
-    system_get_sdk_version(),
-#ifdef GIT_REV
-    GIT_REV,
-#else
-    "-",
-#endif
-    ESP.getCpuFreqMHz(),
-    ESP.getFreeHeap(),
-    (uint32_t)tp.tv_sec);
-#else
   snprintf_P(buff, sizeof(buff), PGverjson,
     ESP.getChipModel(),
     ESP.getFlashChipSize(),
@@ -109,9 +88,9 @@ void wver(AsyncWebServerRequest *request) {
     "-",
 #endif
     ESP.getCpuFreqMHz(),
-    ESP.getFreeHeap(),
+    ESP.getHeapSize(), ESP.getFreeHeap(),      // RAM
+    ESP.getPsramSize(), ESP.getFreePsram(),    // PSRAM
     (uint32_t)tp.tv_sec);
-#endif
 
 
   request->send(200, FPSTR(PGmimejson), buff );

@@ -21,7 +21,7 @@ extern "C" int clock_gettime(clockid_t unused, struct timespec *tp);
 
 // PROGMEM strings
 // sprintf template for json version data
-static const char PGverjson[] = "{\"ChipID\":\"%s\",\"Flash\":%u,\"SDK\":\"%s\",\"firmware\":\"" FW_NAME "\",\"version\":\"" FW_VERSION_STRING "\",\"git\":\"%s\",\"CPUMHz\":%u,\"RAM Heap\":%u,%u,\"PSRAM Heap\":%u,%u,\"Uptime\":%u}";
+static const char PGverjson[] = "{\"ChipID\":\"%s\",\"Flash\":%u,\"SDK\":\"%s\",\"firmware\":\"" FW_NAME "\",\"version\":\"" FW_VERSION_STRING "\",\"git\":\"%s\",\"CPUMHz\":%u,\"RAM Heap size\":%u,\"RAM Heap free\":%u,\"PSRAM size\":%u,\"PSRAM free\":%u,\"Uptime\":%u}";
 
 // Our instance of espem
 ESPEM *espem = nullptr;

@@ -1,15 +1,15 @@
-#ifdef ESP8266
- #include <ESP8266WiFi.h>
- #include <ESPAsyncTCP.h>
- #include <LittleFS.h>
-#endif  // def ESP8266
+#include <AsyncTCP.h>
 
-#ifdef ESP32
- #include <AsyncTCP.h>
- #include <LITTLEFS.h>
- #define FORMAT_LITTLEFS_IF_FAILED true
- #define LittleFS LITTLEFS
+#ifdef ESP_ARDUINO_VERSION
+// LittleFS is embedded into arduino core >=2.0.0
+#include <LittleFS.h>
+#else
+// LittleFS as external lib for arduino core <2.0.0
+#include <LITTLEFS.h>
+#define LittleFS LITTLEFS
 #endif
+
+#define FORMAT_LITTLEFS_IF_FAILED true
 
 #ifndef FTP_USER
  #define FTP_USER "ftp"

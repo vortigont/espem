@@ -1,5 +1,6 @@
 # Change Log
 
+* adopted building with Arduino core >2.0.0
 * UI now can detect if PZEM is disconnected or unreachable and show "err" values
 + energy offset feature
 

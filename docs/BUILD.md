@@ -29,9 +29,9 @@ platformio run -e espem_debug
 ```
 Remember, you can't use serial0 for PZEM comm if build debug version. Default uart port is port_1. Any available esp32 pins could be mapped to port_1
 
-To build fw with more recent arduino core 2.x based on IDF 4.4 (still not default for Platformio as of Apr 2022)
+To build fw with an older arduino core 1.5.x based on IDF 3.x
 ```sh
-platformio run -e espem_core202
+platformio run -e espem_pio350
 ```
 
 ### Making a LittleFS image file with web resources
@@ -42,7 +42,8 @@ cd resources
 ```
 It should populate `/data` dir with `js`, `css`, `index.html.gz`, etc...
 
-To upload LitlleFS image for ESP32 (until core v2 is out) it is required to use an uploader binary *mklittlefs*. Pls, download version for your OS from [here](https://github.com/earlephilhower/mklittlefs/releases) and put the binary to the root dir of the project.
+
+OBSOLETE: <del>To upload LitlleFS image for ESP32 (until core v2 is out) it is required to use an uploader binary *mklittlefs*. Pls, download version for your OS from [here](https://github.com/earlephilhower/mklittlefs/releases) and put the binary to the root dir of the project.</del>
 
 Now the FS image and firmware could be uploaded to the controller, just run
 ```sh

@@ -1,0 +1,18 @@
+{
+    "name": "ESP energy monitor",
+    "short_name": "EspEM",
+    "description": "ESP32+PZEM energy monitor",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#3E4EB8",
+    "theme_color": "#2F3BA2",
+    "icons": [{
+        "src": "favicon.png",
+        "sizes": "32x32",
+        "type": "image/png"
+      }, {
+        "src": "icon-144x144.png",
+        "sizes": "144x144",
+        "type": "image/png"
+      }]
+}

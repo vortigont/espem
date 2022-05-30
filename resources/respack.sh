@@ -155,3 +155,7 @@ mv -f newetags.txt $tags
 ## update local js/css if newer
 updlocalgz 'js/espem.js'
 updlocalgz 'css/espem.css'
+updlocalgz 'manifest.json'
+
+cp -u html/favicon.png ../data/
+cp -u html/icon-144x144.png ../data/

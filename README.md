@@ -10,6 +10,7 @@ for [Peacefair](https://peacefair.aliexpress.com/store/1773456/) PZEM-004Tv30 Po
 - Real-time gauges and power charts
 - metrics collector in controller's memory pool
 - data/metrics export via json
+- compressed OTA updating via [esp32-flashz](https://github.com/vortigont/esp32-flashz) lib
 
 
 ## Legacy v2.x version

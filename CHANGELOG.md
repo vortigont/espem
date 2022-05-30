@@ -1,5 +1,7 @@
 # Change Log
 
+* compressed OTA updates via [esp32-flashz](https://github.com/vortigont/esp32-flashz) lib
+* web application manifest added, ESPEM webpage could be added as a shortcut on mobile chrome
 * adopted building with Arduino core >2.0.0
 * UI now can detect if PZEM is disconnected or unreachable and show "err" values
 + energy offset feature

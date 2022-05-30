@@ -24,6 +24,8 @@ static const char PGdatajsontpl[] PROGMEM = "{\"age\":%llu,\"U\":%.1f,\"I\":%.2f
 static const char PROGMEM PGsmpld[] = "Metrics collector disabled";
 static const char PROGMEM PGdre[] = "Data read error";
 static const char PROGMEM PGacao[] = "Access-Control-Allow-Origin";
+static const char* PGmimetxt = "text/plain";
+//static const char* PGmimehtml = "text/html; charset=utf-8";
 
 using namespace pzmbus;     // use general pzem abstractions
 
@@ -109,12 +111,12 @@ String& ESPEM::mktxtdata ( String& txtdata) {
 // compat method for v 1.x cacti scripts
 void ESPEM::wpmdata(AsyncWebServerRequest *request) {
   if ( !tsc.getTScnt() ) {
-    request->send(503, FPSTR(PGmimetxt), FPSTR(PGdre) );
+    request->send(503, PGmimetxt, FPSTR(PGdre) );
     return;
   }
 
   String data;
-  request->send(200, FPSTR(PGmimetxt), mktxtdata(data) );
+  request->send(200, PGmimetxt, mktxtdata(data) );
 }
 
 

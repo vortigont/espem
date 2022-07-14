@@ -43,7 +43,7 @@ jobs:
         pio update
     - name: Run PlatformIO
       run: |
-        pio run -e espem -e espem_debug -e espem_pio350
+        pio run -e espem -e espem_debug
 #      env: 
 #        PLATFORMIO_CI_SRC: ${{ matrix.code }}
 #      run: |

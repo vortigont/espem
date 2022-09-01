@@ -1,8 +1,8 @@
 /*  ESPEM - ESP Energy monitor
- *  A code for ESP8266 based boards to interface with PeaceFair PZEM PowerMeters
+ *  A code for ESP32 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
  *
- *  (c) Emil Muratov 2018 - 2021
+ *  (c) Emil Muratov 2018 - 2022
  *
  */
 
@@ -11,7 +11,7 @@
 #define FW_NAME "espem"
 
 #define FW_VERSION_MAJOR     3
-#define FW_VERSION_MINOR     0
+#define FW_VERSION_MINOR     1
 #define FW_VERSION_REVISION  0
 
 /* make version as integer*/
@@ -32,12 +32,6 @@
 #include "config.h"
 #include "uistrings.h"  // non-localized text-strings
 #include <ESPAsyncWebServer.h>
-
-#ifdef ESP8266
-extern "C" {
-#include "user_interface.h"
-}
-#endif
 
 // EMBUI
 void create_parameters();       // декларируем для переопределения weak метода из фреймворка для WebUI

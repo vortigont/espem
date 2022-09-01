@@ -1,8 +1,8 @@
 /*  ESPEM - ESP Energy monitor
- *  A code for ESP8266 based boards to interface with PeaceFair PZEM PowerMeters
+ *  A code for ESP32 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
  *
- *  (c) Emil Muratov 2017-2021
+ *  (c) Emil Muratov 2017-2022
  *
  */
 

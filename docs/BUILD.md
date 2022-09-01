@@ -59,15 +59,16 @@ platformio run -e espem_debug -t uploadfs
 
 
 
-That's it. Controller should reboot and enable WiFi. Look for the open Access point names like EmbUI-xxxx, connect to it and open WebUI http://192.168.4.1/, proceed with settings via WebUI. Check [USGE](USAGE.md) page for more details.
+That's it. Controller should reboot and enable WiFi. Look for the open Access point names like EmbUI-xxxx, connect to it and open WebUI http://192.168.4.1/, proceed with settings via WebUI. Check [USAGE](USAGE.md) page for more details.
 
 
-### Copressed OTA updates
+### Compressed OTA updates
 Uploading updated firmware could be done either via WebUI or curl CLI tool. It is possible to compress images with zlib to reduce upload size, decompression is handled via [esp32-flashz](https://github.com/vortigont/esp32-flashz) lib.
 
-OTA could be intergated to Platformio's scritping, check supplied platformio.ini for OTA template. it need two options:
- - OTA_url - upload url to access espem
- - OTA_compress - use zlib compression on upload
+OTA could be intergated to Platformio's scritping, check supplied `platformio.ini` for OTA template. It needs following options:
+ - `upload_protocol = custom` - enable custom fw uploader
+ - `upload_port` - upload url to access espem
+ - `upload_flags = compress` - use zlib compression on upload
 
 
 uploading fw with curl CLI

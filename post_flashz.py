@@ -46,20 +46,25 @@ def zlib_compress(source):
 
 def ota_upload(source, target, env):
     file_path = str(source[0])
-    print ("Found OTA_url option, will attempt over-the-air upload")
+    print ("Found OTA_url option, will attempt over-the-air HTTP upload")
 
     try:
-        compress = env.GetProjectOption('OTA_compress')
-        if compress in ("yes", "true", "1"):
-            print("Found OTA_compress option")
-            zlib_compress(file_path)
-            if (isfile(file_path + ".zz")):
-                file_path += ".zz"
+        flags = env.GetProjectOption('upload_flags')
+        for f in flags:
+            if f in ("mode_z", "compress"):
+                print("will use zlib compression")
+                zlib_compress(file_path)
+                if (isfile(file_path + ".zz")):
+                    file_path += ".zz"
     except:
-        print ("OTA_compress not found, NOT using compression")
+        print ("No 'upload_flags', NOT using compression")
 
 
-    url = env.GetProjectOption('OTA_url')
+    try:
+        url = env.GetProjectOption('upload_port')
+    except:
+        print ("Pls, specify OTA URL via 'upload_port' project option")
+        env.Exit(1)
 
     # check if we upload a firmware or FS image
     imgtype = None
@@ -90,7 +95,8 @@ def ota_upload(source, target, env):
 
 # Custom upload handler
 try:
-    env.GetProjectOption('OTA_url')
-    env.Replace(UPLOADCMD=ota_upload)
+    proto = env.GetProjectOption('upload_protocol')
+    if proto in ("custom"):
+        env.Replace(UPLOADCMD=ota_upload)
 except:
-    print ("OTA_url not found, fallback to serial flasher")
+    print ("No custom upload proto, fallback to serial flasher")

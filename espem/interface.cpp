@@ -7,8 +7,7 @@
 #include "basicui.h"
 
 #define MAX_UI_UPDATE_RATE 30
-#define MAX_GPIO           39
-#define MAX_UART           2
+#define SOC_UART_NUM           2
 
 extern ESPEM *espem;
 
@@ -190,9 +189,9 @@ void block_page_espemset(Interface *interf, JsonObject *data){
     interf->json_section_begin(FPSTR(A_SET_UART));
 
     interf->json_section_line("");
-    interf->number(FPSTR(V_UART), "Uart port", 1, 0, MAX_UART);
-    interf->number(FPSTR(V_RX), "RX pin (-1 default)", 1, -1, MAX_GPIO);
-    interf->number(FPSTR(V_TX), "TX pin (-1 default)", 1, -1, MAX_GPIO);
+    interf->number(FPSTR(V_UART), "Uart port", 1, 0, SOC_UART_NUM);
+    interf->number(FPSTR(V_RX), "RX pin (-1 default)", 1, -1, NUM_OUPUT_PINS);
+    interf->number(FPSTR(V_TX), "TX pin (-1 default)", 1, -1, NUM_OUPUT_PINS);
     interf->json_section_end();     // end of line
 
     interf->button_submit(FPSTR(A_SET_UART), FPSTR(T_DICT[lang][TD::D_Apply]), F("blue"));
@@ -333,17 +332,17 @@ void set_uart_opts(Interface *interf, JsonObject *data){
     if (!data) return;
 
     uint8_t p = (*data)[FPSTR(V_UART)].as<unsigned short>();
-    if ( p <= MAX_UART ){
+    if ( p <= SOC_UART_NUM ){
         SETPARAM(FPSTR(V_UART));
     } else return;
 
     int r = (*data)[FPSTR(V_RX)].as<int>();
-    if (r <= MAX_GPIO && r >0) {
+    if (r <= NUM_OUPUT_PINS && r >0) {
         SETPARAM(FPSTR(V_RX));
     } else return;
 
     int t = (*data)[FPSTR(V_TX)].as<int>();
-    if (t <= MAX_GPIO && r >0){
+    if (t <= NUM_OUPUT_PINS && r >0){
         SETPARAM(FPSTR(V_TX));
     } else return;
 

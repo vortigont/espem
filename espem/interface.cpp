@@ -7,7 +7,6 @@
 #include "basicui.h"
 
 #define MAX_UI_UPDATE_RATE 30
-#define SOC_UART_NUM           2
 
 extern ESPEM *espem;
 

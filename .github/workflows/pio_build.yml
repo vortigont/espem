@@ -7,8 +7,22 @@ name: PlatformIO CI
 on:
   push:
     branches: [ master, feat ]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.c'
+      - '**.ini'
+      - '**.yml'
   pull_request:
     branches: [ master]
+    paths:
+      - '**.cpp'
+      - '**.hpp'
+      - '**.h'
+      - '**.c'
+      - '**.ini'
+      - '**.yml'
 
 jobs:
   build:
@@ -20,30 +34,28 @@ jobs:
           - "."
 
     steps:
-    - uses: actions/checkout@v2
-    - name: Cache pip
-      uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
-        restore-keys: ${{ runner.os }}-pip-
-    - name: Cache PlatformIO
-      uses: actions/cache@v2
-      with:
-        path: ~/.platformio
-        key: ${{ runner.os }}-${{ hashFiles('**/lockfiles') }}
-    - name: Set up Python 3.x
-      uses: actions/setup-python@v2
-      with:
-        python-version: '3.x'
-    - name: Install Platformio
-      run: |
-        python -m pip install --upgrade pip
-        pip install --upgrade platformio
-        pio update
-    - name: Run PlatformIO
-      run: |
-        pio run -e espem -e espem_debug
+      - uses: actions/checkout@v3
+      - name: PIO Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.platformio/.cache
+          key: ${{ runner.os }}-pio
+          #restore-keys: |
+          #  ${{ runner.os }}-pio
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install Platformio
+        run: |
+          python -m pip install --upgrade pip
+          pip install --upgrade platformio
+          #platformio pkg update
+      - name: Run PlatformIO
+        run: |
+          pio run -e espem -e espem_debug
 #      env: 
 #        PLATFORMIO_CI_SRC: ${{ matrix.code }}
 #      run: |

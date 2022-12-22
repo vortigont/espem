@@ -223,11 +223,11 @@ void ESPEM::wspublish(){
   if (!embui.ws.count() || !pz)  // exit, if there are no clients connected
       return;
 
-  Interface *interf = new Interface(&embui, &embui.ws, 512);
+  Interface *interf = new Interface(&embui, &embui.ws, 1024);
 
   const auto m = pz->getMetricsPZ004();
 
-  interf->json_frame_custom(F("rawdata"));
+  interf->json_frame("rawdata");
 
   interf->value(F("stale"), pz->getState()->dataStale(), false);
   interf->value(F("age"), pz->getState()->dataAge());

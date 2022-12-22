@@ -1,5 +1,7 @@
 # Change Log
 
+* bump EmbUI version up to v2.7.0 (API chang, need to update resources)
+
 ## v3.1.0 (2022-09-01)
 * deprecate esp32 platform v3.5 and older
 * compressed OTA updates via [esp32-flashz](https://github.com/vortigont/esp32-flashz) lib

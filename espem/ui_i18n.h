@@ -55,7 +55,7 @@ static const char *const C_DICT[][UI_DICT_SIZE] PROGMEM = {
     T_EN_MScale,
     T_EN_Voltage,
     T_EN_PowerF
-  }
+  },
 // Index 1 - Russian lang
   { T_RU_ESPEM,
     T_RU_ESPEM_DB,
@@ -63,5 +63,5 @@ static const char *const C_DICT[][UI_DICT_SIZE] PROGMEM = {
     T_RU_MScale,
     T_RU_Voltage,
     T_RU_PowerF
-  },
+  }
 };

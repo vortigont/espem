@@ -48,15 +48,7 @@ static const char T_RU_PowerF[] PROGMEM = "Коэффициент мощност
  *  it is possible to reuse untraslated mesages from other lang's
  */
 static const char *const C_DICT[][UI_DICT_SIZE] PROGMEM = {
-// Index 0 - Russian lang
-  { T_RU_ESPEM,
-    T_RU_ESPEM_DB,
-    T_RU_ESPEMSet,
-    T_RU_MScale,
-    T_RU_Voltage,
-    T_RU_PowerF
-  },
-// Index 1 - English lang
+// Index 0 - English lang
   { T_EN_ESPEM,
     T_EN_ESPEM_DB,
     T_EN_ESPEMSet,
@@ -64,4 +56,12 @@ static const char *const C_DICT[][UI_DICT_SIZE] PROGMEM = {
     T_EN_Voltage,
     T_EN_PowerF
   }
+// Index 1 - Russian lang
+  { T_RU_ESPEM,
+    T_RU_ESPEM_DB,
+    T_RU_ESPEMSet,
+    T_RU_MScale,
+    T_RU_Voltage,
+    T_RU_PowerF
+  },
 };

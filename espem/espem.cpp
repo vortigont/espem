@@ -223,22 +223,20 @@ void ESPEM::wspublish(){
   if (!embui.ws.count() || !pz)  // exit, if there are no clients connected
       return;
 
-  Interface *interf = new Interface(&embui, &embui.ws, 1024);
-
   const auto m = pz->getMetricsPZ004();
 
-  interf->json_frame("rawdata");
+  Interface interf(&embui, &embui.ws, SMALL_JSON_SIZE);
+  interf.json_frame("rawdata");
 
-  interf->value(F("stale"), pz->getState()->dataStale(), false);
-  interf->value(F("age"), pz->getState()->dataAge());
-
-  interf->value(F("U"), m->voltage/10);
-  interf->value(F("I"), m->asFloat(meter_t::cur));
-  interf->value(F("P"), m->asFloat(meter_t::pwr));
-  interf->value(F("W"), (m->asFloat(meter_t::enrg) + nrg_offset) / 1000);
-  interf->value(F("Pf"), m->asFloat(meter_t::pf));
-  interf->json_frame_flush();
-  delete interf;
+  interf.value("stale", pz->getState()->dataStale(), false);
+  interf.value("age", pz->getState()->dataAge());
+  interf.value("U", m->voltage/10);
+  interf.value("I", m->asFloat(meter_t::cur));
+  interf.value("P", m->asFloat(meter_t::pwr));
+  interf.value("W", (m->asFloat(meter_t::enrg) + nrg_offset) / 1000);
+  interf.value("Pf", m->asFloat(meter_t::pf));
+  interf.value("hz", m->asFloat(meter_t::frq));
+  interf.json_frame_flush();
 }
 
 uint8_t ESPEM::set_uirate(uint8_t seconds){

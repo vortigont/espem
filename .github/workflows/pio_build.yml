@@ -36,14 +36,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: PIO Cache
+        id: cache-pio
         uses: actions/cache@v3
+        env:
+          cache-name: cache-pio-pkgs
         with:
           path: |
             ~/.cache/pip
             ~/.platformio/.cache
-          key: ${{ runner.os }}-pio
-          #restore-keys: |
-          #  ${{ runner.os }}-pio
+          key: ${{ runner.os }}-pio-${{env.cache-name}}
+          restore-keys: |
+            ${{ runner.os }}-pio-
+            ${{ runner.os }}-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:

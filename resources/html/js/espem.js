@@ -11,6 +11,7 @@ function rawdata_cb(obj) {
         if (frame[i].id === "stale" && frame[i].value){   // we have stale data for some reason
             GVchart.axes[0].setTopText('Error');
             GPFchart.axes[0].setTopText('Error');
+            // set err value for display widgets
             frame.push({"id":"cur", "value": "err", "html" : true});
             frame.push({"id":"pwr", "value": "err", "html" : true});
             frame.push({"id":"enrg", "value": "err", "html" : true});
@@ -34,9 +35,10 @@ function rawdata_cb(obj) {
             pF = frame[i].value;
         }
         // values for 'displays'
-        if (frame[i].id === "I"){ frame[i].value = frame[i].value.toFixed(3); I = frame[i].value; frame.push({"id":"cur", "value": I}); }
-        if (frame[i].id === "P"){ frame[i].value = frame[i].value.toFixed(1); P = frame[i].value; frame.push({"id":"pwr", "value": P}); }
-        if (frame[i].id === "W"){ frame[i].value = frame[i].value.toFixed(3); W = frame[i].value; frame.push({"id":"enrg", "value": W}); }
+        if (frame[i].id === "I"){ frame[i].value = frame[i].value.toFixed(3); I = frame[i].value; }
+        if (frame[i].id === "P"){ frame[i].value = frame[i].value.toFixed(1); P = frame[i].value; }
+        if (frame[i].id === "W"){ frame[i].value = frame[i].value.toFixed(3); W = frame[i].value; }
+        if (frame[i].id === "freq"){ frame[i].value = frame[i].value / 10; }
 
         // обновить график с новым значением шкалы
         if (frame[i].id === "scntr" && Gsminichart){

@@ -235,7 +235,7 @@ void ESPEM::wspublish(){
   interf.value("P", m->asFloat(meter_t::pwr));
   interf.value("W", (m->asFloat(meter_t::enrg) + nrg_offset) / 1000);
   interf.value("Pf", m->asFloat(meter_t::pf));
-  interf.value("hz", m->asFloat(meter_t::frq));
+  interf.value("freq", m->freq);
   interf.json_frame_flush();
 }
 

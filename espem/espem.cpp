@@ -53,7 +53,11 @@ bool ESPEM::begin(const uart_port_t p, int rx, int tx){
   }
 
   // first run
+#ifdef ESPEM_DUMMY
+  pz = new DummyPZ004(PZEM_ID, ADDR_ANY);
+#else
   pz = new PZ004(PZEM_ID, ADDR_ANY);
+#endif
   if (!pz) return false;    // failed to create obj
 
   pz->attachMsgQ(qport);

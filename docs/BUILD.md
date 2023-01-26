@@ -29,9 +29,9 @@ platformio run -e espem_debug
 ```
 Remember, you can't use serial0 for PZEM comm if build debug version. Default uart port is port_1. Any available esp32 pins could be mapped to port_1
 
-To build fw with an older arduino core 1.5.x based on IDF 3.x
+To build fw with Dummy PZEM emulator, run:
 ```sh
-platformio run -e espem_pio350
+platformio run -e espem_dummy
 ```
 
 ### Making a LittleFS image file with web resources
@@ -41,6 +41,10 @@ cd resources
 ./respack.sh
 ```
 It should populate `/data` dir with `js`, `css`, `index.html.gz`, etc...
+
+If you are "Windows" user, just install [Git for Windows](https://gitforwindows.org/), it will provide you with a [Git-bash](https://appuals.com/what-is-git-bash/), run `bash ./respack.sh` via it's console.
+Or better learn what is [WSL](https://learn.microsoft.com/en-us/windows/wsl/about), how to [install](https://www.windowscentral.com/how-install-wsl2-windows-10) it and run.
+
 
 
 OBSOLETE: <del>To upload LitlleFS image for ESP32 (until core v2 is out) it is required to use an uploader binary *mklittlefs*. Pls, download version for your OS from [here](https://github.com/earlephilhower/mklittlefs/releases) and put the binary to the root dir of the project.</del>

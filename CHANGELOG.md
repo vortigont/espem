@@ -1,6 +1,10 @@
 # Change Log
 
-* bump EmbUI version up to v2.7.0 (API chang, need to update resources)
++ espem could be build with DummyPZEM emulator for prototyping
++ periodic publishing sends raw integer values to webui, js does the formatting for webui
+* bump EmbUI version up to v2.7.0 (API change, need to update resourses)
++ add frequency value to the left menu
++ make gpio and port num limits in WebUI platform dependent
 
 ## v3.1.0 (2022-09-01)
 * deprecate esp32 platform v3.5 and older

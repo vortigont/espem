@@ -139,10 +139,11 @@ void block_page_main(Interface *interf, JsonObject *data){
     // Plain values display
     interf->json_section_line();             // "Live controls"
     auto *m = espem->pz->getMetricsPZ004();
+    // Widgets & left side menu
     // id, type, value, label, param
-    interf->display(F("pwr"),  m->power/10 );      // Power
+    interf->display(F("pwr"),  m->power/10 );                       // Power
     interf->display(F("cur"),  m->asFloat(pzmbus::meter_t::cur));   // Current
-    interf->display(F("enrg"), m->energy/1000);    // Energy
+    interf->display(F("enrg"), m->energy/1000);                     // Energy
     interf->json_section_end();     // end of line
 
 

@@ -21,24 +21,29 @@ function rawdata_cb(obj) {
     
         if (frame[i].id === "U"){
             //var element = document.getElementById("gaugeV");
-            GVchart.arrows[0].setValue(frame[i].value);
-            GVchart.axes[0].setTopText(frame[i].value.toFixed(0) + ' Volts');
+            frame[i].value /= 10;     // decivolts
+            GVchart.arrows[0].setValue(frame[i].value.toFixed(0));
+            GVchart.axes[0].setTopText(frame[i].value + ' Volts');
             U = frame[i].value;
         }
         if (frame[i].id === "Pf"){
             //var element = document.getElementById("gaugePF");
-            GPFchart.arrows[0].setValue(frame[i].value * 100);
-            GPFchart.axes[0].setTopText('PF ' + (frame[i].value * 100).toFixed(0) + '%');
-            GPFchart.axes[0].bands[0].setEndValue(frame[i].value * 100);
-            GPFchart.axes[0].bands[1].setStartValue(frame[i].value * 100);
-            frame[i].value = (frame[i].value).toFixed(2);
+            GPFchart.arrows[0].setValue(frame[i].value);
+            GPFchart.axes[0].setTopText('PF ' + frame[i].value + '%');
+            GPFchart.axes[0].bands[0].setEndValue(frame[i].value);
+            GPFchart.axes[0].bands[1].setStartValue(frame[i].value);
+            frame[i].value /= 100;
             pF = frame[i].value;
         }
         // values for 'displays'
-        if (frame[i].id === "I"){ frame[i].value = frame[i].value.toFixed(3); I = frame[i].value; }
-        if (frame[i].id === "P"){ frame[i].value = frame[i].value.toFixed(1); P = frame[i].value; }
-        if (frame[i].id === "W"){ frame[i].value = frame[i].value.toFixed(3); W = frame[i].value; }
-        if (frame[i].id === "freq"){ frame[i].value = frame[i].value / 10; }
+        if (frame[i].id === "I"){
+            frame[i].value = frame[i].value/1000; // normalize to Amps
+            I = frame[i].value; // for sampling chart data
+            frame.push({"id":"cur", "value": frame[i].value, "html": true});  // for widget
+        }
+        if (frame[i].id === "P"){ frame[i].value /= 10; P = frame[i].value; frame.push({"id":"pwr", "value": P, "html": true}); }
+        if (frame[i].id === "W"){ frame[i].value /= 1000; W = frame[i].value; frame.push({"id":"enrg", "value": W, "html": true}); }
+        if (frame[i].id === "freq"){ frame[i].value /= 10; }
 
         // обновить график с новым значением шкалы
         if (frame[i].id === "scntr" && Gsminichart){
@@ -50,7 +55,7 @@ function rawdata_cb(obj) {
             return;
         }
 
-        // required for left-menu renderer
+        // required for left-menu renderer and widgets
         frame[i].html = true;
     }
 

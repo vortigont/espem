@@ -15,6 +15,7 @@
  #define MAX_FREE_MEM_BLK ESP.getMaxFreeBlockSize()
 #endif
 
+#define PUB_JSSIZE  800
 // sprintf template for json sampling data
 #define JSON_SMPL_LEN 85    // {"t":1615496537000,"U":229.50,"I":1.47,"P":1216,"W":5811338,"hz":50.0,"pF":0.64},
 static const char PGsmpljsontpl[] PROGMEM = "{\"t\":%u000,\"U\":%.2f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f},";
@@ -225,16 +226,16 @@ void ESPEM::wspublish(){
 
   const auto m = pz->getMetricsPZ004();
 
-  Interface interf(&embui, &embui.ws, SMALL_JSON_SIZE);
+  Interface interf(&embui, &embui.ws, PUB_JSSIZE);
   interf.json_frame("rawdata");
 
   interf.value("stale", pz->getState()->dataStale(), false);
   interf.value("age", pz->getState()->dataAge());
-  interf.value("U", m->voltage/10);
-  interf.value("I", m->asFloat(meter_t::cur));
-  interf.value("P", m->asFloat(meter_t::pwr));
-  interf.value("W", (m->asFloat(meter_t::enrg) + nrg_offset) / 1000);
-  interf.value("Pf", m->asFloat(meter_t::pf));
+  interf.value("U", m->voltage);
+  interf.value("I", m->current);
+  interf.value("P", m->power);
+  interf.value("W", m->energy + nrg_offset);
+  interf.value("Pf", m->pf);
   interf.value("freq", m->freq);
   interf.json_frame_flush();
 }
@@ -293,7 +294,7 @@ mcstate_t ESPEM::set_collector_state(mcstate_t state){
             ref->push(*data, TimeProcessor::getInstance().getUnixTime());
           }
           #ifdef ESPEM_DEBUG
-            msgdebug(id, m);          // it will print every data packet coming from PZEM
+            if (m) msgdebug(id, m);          // it will print every data packet coming from PZEM
           #endif
         });
         ts_state = mcstate_t::MC_RUN;

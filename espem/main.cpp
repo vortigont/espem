@@ -12,10 +12,6 @@
 
 #include <EmbUI.h>
 
-#ifdef USE_FTP
- #include "ftpSrv.h"
-#endif
-
 extern "C" int clock_gettime(clockid_t unused, struct timespec *tp);
 
 
@@ -54,10 +50,6 @@ void setup() {
   });
 
 
-  #ifdef USE_FTP
-      ftp_setup(); // запуск ftp-сервера
-  #endif
-
   //sync_parameters();    // sync UI params
 
   embui.setPubInterval(WEBUI_PUBLISH_INTERVAL);
@@ -66,10 +58,6 @@ void setup() {
 // MAIN loop
 void loop() {
   embui.handle();
-
-#ifdef USE_FTP
-    ftp_loop(); // цикл обработки событий фтп-сервера
-#endif
 }
 
 // send HTTP responce, json with controller/fw versions and status info

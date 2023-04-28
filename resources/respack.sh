@@ -103,22 +103,23 @@ if [ -f html/css/style_*.css ] ; then
     done
 fi
 
+
 # if any of the styles needs updating, than we need to repack both embui and local files
 if [ $refresh_data -eq 1 ] ; then
 
     echo "Refreshing EmbUI css files/pics..."
 
     curl -sL ${embuirepo}/raw/$embuitag/resources/data.zip > embui.zip
-    unzip -o -d ../data/ embui.zip "css/*" "js/tz*"
+    unzip -o -d ../data/ embui.zip "css/*" "js/*" "locale/*"
 
     # append our local styles to the embui
     if [ -f html/css/style_*.css ] ; then
         for f in "css/style_*.css"
         do
-            gzip -d ../data/css/$( basename $f).gz
+            ${compress_cmd} -d ../data/css/$( basename $f).${compressor}
             cat $f >> ../data/css/$( basename $f)
-            gzip -9 ../data/css/$( basename $f)
-            touch -r $f ../data/css/$( basename $f).gz
+            ${compress_cmd} ${comress_args} ../data/css/$( basename $f)
+            touch -r $f ../data/css/$( basename $f).${compressor}
         done
     fi
 

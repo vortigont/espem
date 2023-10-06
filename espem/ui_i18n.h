@@ -25,18 +25,18 @@ enum CD : uint8_t {
 
 // Infoclock - English Strings (order does not matther)
 // ИнфоЧасики - Русские тексты (порядок значения не имеет)
-static const char T_EN_ESPEM[] PROGMEM = "ESP Energy Monitor";
-static const char T_RU_ESPEM[] PROGMEM = "ESP Энергометр";
-static const char T_EN_ESPEM_DB[] PROGMEM = "ESPEM Dashboard";
-static const char T_RU_ESPEM_DB[] PROGMEM = "ESPEM Индикаторы";
-static const char T_EN_ESPEMSet[] PROGMEM = "ESPEM Setup";
-static const char T_RU_ESPEMSet[] PROGMEM = "ESPEM Параметры";
-static const char T_EN_MScale[] PROGMEM = "Metrics scale";
-static const char T_RU_MScale[] PROGMEM = "Масштаб выборки";
-static const char T_EN_Voltage[] PROGMEM = "Voltage meter";
-static const char T_RU_Voltage[] PROGMEM = "Напряжение сети";
-static const char T_EN_PowerF[] PROGMEM = "Power Factor";
-static const char T_RU_PowerF[] PROGMEM = "Коэффициент мощности";
+static constexpr const char T_EN_ESPEM[] PROGMEM = "ESP Energy Monitor";
+static constexpr const char T_RU_ESPEM[] PROGMEM = "ESP Энергометр";
+static constexpr const char T_EN_ESPEM_DB[] PROGMEM = "ESPEM Dashboard";
+static constexpr const char T_RU_ESPEM_DB[] PROGMEM = "ESPEM Индикаторы";
+static constexpr const char T_EN_ESPEMSet[] PROGMEM = "ESPEM Setup";
+static constexpr const char T_RU_ESPEMSet[] PROGMEM = "ESPEM Параметры";
+static constexpr const char T_EN_MScale[] PROGMEM = "Metrics scale";
+static constexpr const char T_RU_MScale[] PROGMEM = "Масштаб выборки";
+static constexpr const char T_EN_Voltage[] PROGMEM = "Voltage meter";
+static constexpr const char T_RU_Voltage[] PROGMEM = "Напряжение сети";
+static constexpr const char T_EN_PowerF[] PROGMEM = "Power Factor";
+static constexpr const char T_RU_PowerF[] PROGMEM = "Коэффициент мощности";
 
 
 /**
@@ -47,7 +47,7 @@ static const char T_RU_PowerF[] PROGMEM = "Коэффициент мощност
  *  Messages indexes of each lang must match each other
  *  it is possible to reuse untraslated mesages from other lang's
  */
-static const char *const C_DICT[][UI_DICT_SIZE] PROGMEM = {
+static constexpr const char *const C_DICT[][UI_DICT_SIZE] PROGMEM = {
 // Index 0 - English lang
   { T_EN_ESPEM,
     T_EN_ESPEM_DB,

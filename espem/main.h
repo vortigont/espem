@@ -23,7 +23,7 @@
 
 
 #define BAUD_RATE       115200  // serial debug port baud rate
-#define HTTP_VER_BUFSIZE  200
+#define HTTP_VER_BUFSIZE  256
 
 #define WEBUI_PUBLISH_INTERVAL  20
 

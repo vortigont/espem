@@ -272,8 +272,8 @@ bool ESPEM::tsSet(size_t size, uint32_t interval){
   //tsc.addTS(300, esp_timer_get_time() >> 20, 10, "per10sec", 2);
   //tsc.addTS(300, esp_timer_get_time() >> 20, 60, "permin", 2);
 
-  LOG(printf, "SRAM: heap %d, free %d\n", ESP.getHeapSize(), ESP.getFreeHeap());
-  LOG(printf, "SPI-RAM: heap %d, free %d\n", ESP.getPsramSize(), ESP.getFreePsram());
+  LOG(printf, "SRAM: heap %u, free %u\n", ESP.getHeapSize(), ESP.getFreeHeap());
+  LOG(printf, "SPI-RAM: heap %u, free %u\n", ESP.getPsramSize(), ESP.getFreePsram());
 
   return (bool)tsc.getTScap();
 }

@@ -1,5 +1,8 @@
 .pio
 .vscode
+config.json
+lnk
+drafts
 *.bin
 *.orig
 .clang_complete

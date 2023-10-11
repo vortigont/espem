@@ -34,8 +34,25 @@ To build fw with Dummy PZEM emulator, run:
 platformio run -e espem_dummy
 ```
 
-### Making a LittleFS image file with web resources
-To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/vortigont/EmbUI) framework and js/css files for the ESPEM project. There is no prebuild image since it is hard to maintain it, instead there is a shell script that downloads required files from github, repacks it and places under `/data` directory. That directory is used to create and upload LittleFS image to the controller. Run
+To upload firmware to MCU, run
+```sh
+platformio run -t upload
+```
+
+or, to upload debug version
+```sh
+platformio run -e espem_debug -t upload
+```
+
+### Uploading LittleFS image file with web resources
+Firmware needs an FS with web resources to be uploaded to controller before first use.
+This could be done with a simple
+```sh
+platformio run -t uploadfs
+```
+
+### Making a LittleFS image file with web resources (optional)
+To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/vortigont/EmbUI) framework and js/css files for the ESPEM project. There is a shell script that downloads required files from github, repacks it and places under `/data` directory. That directory is used to create and upload LittleFS image to the controller. Run
 ```sh
 cd resources
 ./respack.sh
@@ -44,23 +61,6 @@ It should populate `/data` dir with `js`, `css`, `index.html.gz`, etc...
 
 If you are "Windows" user, just install [Git for Windows](https://gitforwindows.org/), it will provide you with a [Git-bash](https://appuals.com/what-is-git-bash/), run `bash ./respack.sh` via it's console.
 Or better learn what is [WSL](https://learn.microsoft.com/en-us/windows/wsl/about), how to [install](https://www.windowscentral.com/how-install-wsl2-windows-10) it and run.
-
-
-
-OBSOLETE: <del>To upload LitlleFS image for ESP32 (until core v2 is out) it is required to use an uploader binary *mklittlefs*. Pls, download version for your OS from [here](https://github.com/earlephilhower/mklittlefs/releases) and put the binary to the root dir of the project.</del>
-
-Now the FS image and firmware could be uploaded to the controller, just run
-```sh
-platformio run -t upload
-platformio run -t uploadfs
-```
-
-or debug version
-```sh
-platformio run -e espem_debug -t upload
-platformio run -e espem_debug -t uploadfs
-```
-
 
 
 That's it. Controller should reboot and enable WiFi. Look for the open Access point names like EmbUI-xxxx, connect to it and open WebUI http://192.168.4.1/, proceed with settings via WebUI. Check [USAGE](USAGE.md) page for more details.

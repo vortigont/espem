@@ -48,8 +48,8 @@ void ui_page_main(Interface *interf, const JsonObject *data, const char* action)
 void block_menu(Interface *interf){
     // создаем меню
     interf->json_section_menu();    // открываем секцию "меню"
-    interf->option(B_ESPEM,   C_DICT[lang][CD::ESPEM_DB]);          // пункт меню "ESPEM Info"
-    interf->option(B_ESPEMSET, C_DICT[lang][CD::ESPEMSet]);         // пункт меню "ESPEM Setup"
+    interf->option(A_ui_page_espem,   C_DICT[lang][CD::ESPEM_DB]);          // пункт меню "ESPEM Info"
+    interf->option(A_ui_page_espem_setup, C_DICT[lang][CD::ESPEMSet]);         // пункт меню "ESPEM Setup"
 
     /**
      * добавляем в меню пункт - настройки,
@@ -65,12 +65,12 @@ void block_menu(Interface *interf){
  */
 void ui_page_espem(Interface *interf, const JsonObject *data, const char* action){
     interf->json_frame_interface();
-    interf->json_section_main(B_ESPEM, C_DICT[lang][CD::ESPEM_H]);
+    interf->json_section_main(A_ui_page_espem, C_DICT[lang][CD::ESPEM_H]);
 
     interf->json_section_line();             // "Live controls"
-        interf->checkbox(V_EPOLLENA, (bool)espem->get_uirate(), "Live update", true);   // Meter poller status
+        interf->checkbox(A_EPOLLENA, (bool)espem->get_uirate(), "Live update", true);   // Meter poller status
         // UI update rate range slider
-        interf->range(V_UI_UPDRT, embui.paramVariant(V_UI_UPDRT).as<int>(), 0, MAX_UI_UPDATE_RATE, 1, "UI update rate, sec", true);
+        interf->range(A_UI_UPDRT, embui.paramVariant(V_UI_UPDRT).as<int>(), 0, MAX_UI_UPDATE_RATE, 1, "UI update rate, sec", true);
     interf->json_section_end();             // end of line
 
     // Plain values display
@@ -97,14 +97,14 @@ void ui_page_espem(Interface *interf, const JsonObject *data, const char* action
     interf->jscall("gsmini", C_mkchart, "Power chart", chart_css, params);          // Power chart
 
     // slider for the amount of metric samples to be plotted on a chart
-    interf->range(V_SMPLCNT, embui.paramVariant(V_SMPLCNT).as<int>(), 0, (int)espem->getMetricsCap(), 10, C_DICT[lang][CD::MScale], true);
+    interf->range(A_SMPLCNT, embui.paramVariant(V_SMPLCNT).as<int>(), 0, (int)espem->getMetricsCap(), 10, C_DICT[lang][CD::MScale], true);
 
     interf->json_frame_flush();     // flush frame
 }
 
 // Create Additional buttons on "Settings" page
 void user_settings_frame(Interface *interf, const JsonObject *data, const char* action){
-    interf->button(button_t::generic, B_ESPEMSET, "ESPEM");
+    interf->button(button_t::generic, A_ui_page_espem_setup, "ESPEM");
 }
 
 /**
@@ -116,17 +116,7 @@ void block_page_espemset(Interface *interf, const JsonObject *data, const char* 
     interf->json_frame_interface();
 
     // replacing page with a new one with settings
-    interf->json_section_main(B_ESPEMSET, C_DICT[lang][CD::ESPEMSet]);
-
-    // Poller Line block
-    /*
-    interf->json_section_line("");
-    interf->checkbox(V_EPOLLENA, espem->meterPolling(), "Meter Polling", true);   // Meter poller status
-
-    // UI update Rate range slider
-    interf->range(V_UI_UPDRT, embui.paramVariant(V_UI_UPDRT).as<int>(), 0, MAX_UI_UPDATE_RATE, 1, "UI refresh rate, sec", true);
-    interf->json_section_end();     // end of line
-    */
+    interf->json_section_main(A_ui_page_espem_setup, C_DICT[lang][CD::ESPEMSet]);
 
     interf->json_section_begin(A_SET_UART);
         interf->json_section_line();
@@ -156,12 +146,12 @@ void block_page_espemset(Interface *interf, const JsonObject *data, const char* 
 
     interf->constant("mcap", _msg);
 
-    interf->json_section_line(A_SET_ESPEM);
+    interf->json_section_line(A_set_espem_pool);
         interf->number(V_EPOOLSIZE, embui.paramVariant(V_EPOOLSIZE).as<int>(), "RAM pool size, samples");          // Memory pool for metrics data, samples
         interf->number(V_SMPL_PERIOD, embui.paramVariant(V_SMPL_PERIOD).as<int>(), "Sampling period");                  // sampling period, sec
     interf->json_section_end();     // end of line
     // Button "Apply Metrics pool settings"
-    interf->button(button_t::submit, A_SET_ESPEM, T_DICT[lang][TD::D_Apply]);
+    interf->button(button_t::submit, A_set_espem_pool, T_DICT[lang][TD::D_Apply]);
 
     /*
 	 * Define metrics collector state
@@ -169,7 +159,7 @@ void block_page_espemset(Interface *interf, const JsonObject *data, const char* 
 	 *   1: Running and storing metrics in RAM
 	 *   2: Paused, collecting but not storing, memory reserved 
 	 */
-    interf->select(V_ECOLLECTORSTATE, (uint8_t)espem->get_collector_state(), "Metrics collector status", true);
+    interf->select(A_ECOLLECTORSTATE, (uint8_t)espem->get_collector_state(), "Metrics collector status", true);
         interf->option(0, "Disabled");
         interf->option(1, "Running");
         interf->option(2, "Paused");
@@ -211,59 +201,46 @@ void set_sampler_opts(Interface *interf, const JsonObject *data, const char* act
 void set_directctrls(Interface *interf, const JsonObject *data, const char* action){
     if (!data) return;
 
-    for (JsonPair kv : (*data)) {
+    std::string_view sv(action);
+    sv.remove_prefix(5);  // 'dctl_'
 
-        //LOG(printf_P, PSTR("Iterating Key:%s Value:%s\n"), kv.key().c_str(), kv.value().as<char*>() );
-
-        String _s(V_EPFFIX);
-        String _k(kv.key().c_str());
-
-        _s=V_EPOLLENA;
-        if (!_s.compareTo(_k)){
-           if(kv.value()){
-               espem->set_uirate(embui.paramVariant(V_UI_UPDRT));
-           } else {
-               espem->set_uirate(0);
-           }
-           LOG(printf_P, PSTR("ESPEM: UI refresh state: %d\n"), kv.value().as<int>() );
-           continue;
-        }
-
-        _s=V_UI_UPDRT;
-        if (!_s.compareTo(_k)){
-           espem->set_uirate(kv.value().as<unsigned short>());
-           SETPARAM(V_UI_UPDRT);
-           LOG( printf_P, PSTR("ESPEM: Set UI update rate to: %d\n"), espem->get_uirate() );
-           continue;
-        }
-
-
-        _s=V_ECOLLECTORSTATE;
-        if (!_s.compareTo(_k)){
-            uint8_t new_state = kv.value().as<unsigned short>();
-            // reset TS Container if empty and we need to start it
-            if (espem->get_collector_state() == mcstate_t::MC_DISABLE && new_state >0) espem->tsSet(embui.paramVariant(V_EPOOLSIZE), embui.paramVariant(V_SMPL_PERIOD));
-
-            espem->set_collector_state((mcstate_t)new_state);
-            //embui.var(_k, (uint8_t)espem->set_collector_state((mcstate_t)new_state), true);   // no need to set this var, it's a run-time state
-            LOG(printf_P, PSTR("UI: Set TS Collector state to: %d\n"), (int)espem->get_collector_state() );
-            continue;
-        }
-
-
-        // Set amount of samples displayed on chart (TODO: replace with js internal var)
-        _s=V_SMPLCNT;
-        if (!_s.compareTo(_k)){
-            SETPARAM(V_SMPLCNT);
-
-            if (interf){
-                interf->json_frame("rawdata");
-                interf->value("scntr", kv.value());
-                interf->json_frame_flush();
-            }
-        }
+    // ena/disable polling
+    if (sv.compare(V_EPOLLENA) == 0){
+        espem->set_uirate( (*data)[A_EPOLLENA] ? embui.paramVariant(V_UI_UPDRT) : 0);
+        LOG(printf_P, PSTR("ESPEM: UI refresh state: %d\n"), (*data)[A_EPOLLENA].as<int>() );
+        return;
     }
 
+    // UI update rate
+    if (sv.compare(V_UI_UPDRT) == 0){
+        espem->set_uirate((*data)[A_UI_UPDRT]);
+        embui.var(V_UI_UPDRT, espem->get_uirate());
+        LOG( printf_P, PSTR("ESPEM: Set UI update rate to: %d\n"), espem->get_uirate() );
+        return;
+    }
+
+    // Metrics collector run/pause
+    if (sv.compare(V_ECOLLECTORSTATE) == 0){
+        uint8_t new_state = (*data)[A_ECOLLECTORSTATE];
+        // reset TS Container if empty and we need to start it
+        if (espem->get_collector_state() == mcstate_t::MC_DISABLE && new_state >0)
+            espem->tsSet(embui.paramVariant(V_EPOOLSIZE), embui.paramVariant(V_SMPL_PERIOD));
+
+        espem->set_collector_state((mcstate_t)new_state);
+        LOG(printf, "UI: Set TS Collector state to: %d\n", (int)espem->get_collector_state() );
+        return;
+    }
+
+    // Metrics graph - number of samples to draw in a small power chart
+    if (sv.compare(V_SMPLCNT) == 0){
+        embui.var(V_SMPLCNT, (*data)[A_SMPLCNT]);
+        // send update command to AmCharts block
+        if (interf){
+            interf->json_frame("rawdata");
+            interf->value("scntr", (*data)[A_SMPLCNT]);
+            interf->json_frame_flush();
+        }
+    }
 }
 
 /**
@@ -332,10 +309,6 @@ void embui_actions_register(){
     embui.var_create(V_TX, -1);                              // TX pin (default)
     embui.var_create(V_EOFFSET, 0.0);                        // Energy counter offset
 
-
-    //Metrics collector run/pause
-    //embui.var_create(V_ECOLLECTORSTATE, 1);                  // Collector state
-
     /**
      * обработчики действий
      */ 
@@ -346,15 +319,15 @@ void embui_actions_register(){
     //embui.action.set_publish_cb(pubCallback);                // Publish callback
 
     // вывод WebUI секций
-    embui.action.add(B_ESPEM, ui_page_espem);                // generate "main" info page
-    embui.action.add(B_ESPEMSET, block_page_espemset);       // generate "ESPEM settings" page
+    embui.action.add(A_ui_page_espem, ui_page_espem);                // generate "main" info page
+    embui.action.add(A_ui_page_espem_setup, block_page_espemset);       // generate "ESPEM settings" page
 
 
     // активности
-    embui.action.add(A_SET_ESPEM,  set_sampler_opts);        // set options for espem
+    embui.action.add(A_set_espem_pool,  set_sampler_opts);        // set options for espem
     embui.action.add(A_SET_UART,   set_uart_opts);           // set UART gpios
     embui.action.add(A_SET_PZOPTS,   set_pzopts);            // set options for PZEM
 
     // direct controls
-    embui.action.add(A_DIRECT_CTL,  set_directctrls);        // process direct update controls
+    embui.action.add(A_DIRECT_CTL,  set_directctrls);        // process onChange update controls
 }

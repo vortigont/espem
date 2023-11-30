@@ -225,12 +225,12 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
 
 // publish meter data via WebSocket (a periodic Task)
 void ESPEM::wspublish(){
-  if (!embui.ws.count() || !pz)  // exit, if there are no clients connected
+  if (!embui.feeders.available() || !pz)  // exit, if there are no clients connected
       return;
 
   const auto m = pz->getMetricsPZ004();
 
-  Interface interf(&embui, &embui.ws, PUB_JSSIZE);
+  Interface interf(&embui.feeders, PUB_JSSIZE);
   interf.json_frame("rawdata");
 
   interf.value("stale", pz->getState()->dataStale(), false);

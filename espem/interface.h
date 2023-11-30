@@ -1,19 +1,19 @@
 #pragma once
 
-// Interface blocks
-void block_menu(Interface *interf, JsonObject *data);
-void block_page_main(Interface *interf, JsonObject *data);
-void block_page_espemset(Interface *interf, JsonObject *data);
+// register config params and action callbacks
+void embui_actions_register();
 
-//void remote_action(RA action, ...);
-//void uploadProgress(size_t len, size_t total);
+// Interface blocks
+void block_menu(Interface *interf);
+void block_page_main(Interface *interf, const JsonObject *data, const char* action);
+void block_page_espemset(Interface *interf, const JsonObject *data, const char* action);
 
 //  ACTIONS
-void action_demopage(Interface *interf, JsonObject *data);
-void set_sampler_opts(Interface *interf, JsonObject *data);
-void set_directctrls(Interface *interf, JsonObject *data);
-void set_uart_opts(Interface *interf, JsonObject *data);
-void set_pzopts(Interface *interf, JsonObject *data);
+void action_demopage(Interface *interf, const JsonObject *data, const char* action);
+void set_sampler_opts(Interface *interf, const JsonObject *data, const char* action);
+void set_directctrls(Interface *interf, const JsonObject *data, const char* action);
+void set_uart_opts(Interface *interf, const JsonObject *data, const char* action);
+void set_pzopts(Interface *interf, const JsonObject *data, const char* action);
 
 // Callbacks
 void pubCallback(Interface *interf);

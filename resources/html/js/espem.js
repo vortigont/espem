@@ -1,3 +1,6 @@
+// override variable with ESPEM's API version
+app_jsapi = 1;
+
 // raw data coming from the EmbUI handled here
 function rawdata_cb(obj) {
     var frame = obj.block;
@@ -5,49 +8,50 @@ function rawdata_cb(obj) {
         console.log('Message has no data block!');
         return;
     }
-
+    console.log('prcess...');
     var U, I, P, W, pF;
-    for (var i = 0; i < frame.length; i++) if (typeof frame[i] == "object") {
-        if (frame[i].id === "stale" && frame[i].value){   // we have stale data for some reason
+    for (var i = 0; i != frame.length; i++) if (typeof frame[i] == "object") {
+        if (frame[i].stale === true){   // we have stale data for some reason
             GVchart.axes[0].setTopText('Error');
             GPFchart.axes[0].setTopText('Error');
             // set err value for display widgets
-            frame.push({"id":"cur", "value": "err", "html" : true});
-            frame.push({"id":"pwr", "value": "err", "html" : true});
-            frame.push({"id":"enrg", "value": "err", "html" : true});
+            frame.push({"id":"cur", "value": "err"});
+            frame.push({"id":"pwr", "value": "err"});
+            frame.push({"id":"enrg", "value": "err"});
             rdr.value(obj);
             return;
         }
     
-        if (frame[i].id === "U"){
-            //var element = document.getElementById("gaugeV");
-            frame[i].value /= 10;     // decivolts
-            GVchart.arrows[0].setValue(frame[i].value.toFixed(0));
-            GVchart.axes[0].setTopText(frame[i].value + ' Volts');
-            U = frame[i].value;
+        if ('U' in frame[i]){
+            frame[i].U /= 10;     // decivolts
+            GVchart.arrows[0].setValue(frame[i].U.toFixed(0));
+            GVchart.axes[0].setTopText(frame[i].U + ' Volts');
+            U = frame[i].U;
+            frame[i] = {'id':'U', 'value': U} // for left bar panel
         }
-        if (frame[i].id === "Pf"){
-            //var element = document.getElementById("gaugePF");
-            GPFchart.arrows[0].setValue(frame[i].value);
-            GPFchart.axes[0].setTopText('PF ' + frame[i].value + '%');
-            GPFchart.axes[0].bands[0].setEndValue(frame[i].value);
-            GPFchart.axes[0].bands[1].setStartValue(frame[i].value);
-            frame[i].value /= 100;
-            pF = frame[i].value;
+        if ('Pf' in frame[i]){
+            GPFchart.arrows[0].setValue(frame[i].Pf);
+            GPFchart.axes[0].setTopText('PF ' + frame[i].Pf + '%');
+            GPFchart.axes[0].bands[0].setEndValue(frame[i].Pf);
+            GPFchart.axes[0].bands[1].setStartValue(frame[i].Pf);
+            frame[i].Pf /= 100;
+            pF = frame[i].Pf;
+            frame[i] = {'id':'Pf', 'value': pF}
         }
         // values for 'displays'
-        if (frame[i].id === "I"){
-            frame[i].value = frame[i].value/1000; // normalize to Amps
-            I = frame[i].value; // for sampling chart data
-            frame.push({"id":"cur", "value": frame[i].value, "html": true});  // for widget
+        if ('I' in frame[i]){
+            frame[i].I /= 1000; // normalize to Amps
+            I = frame[i].I; // for sampling chart data
+            frame[i] = {"id":"I", "value": I};
+            frame.push({"id":"cur", "value":I});  // for widget
         }
-        if (frame[i].id === "P"){ frame[i].value /= 10; P = frame[i].value; frame.push({"id":"pwr", "value": P, "html": true}); }
-        if (frame[i].id === "W"){ frame[i].value /= 1000; W = frame[i].value; frame.push({"id":"enrg", "value": W, "html": true}); }
-        if (frame[i].id === "freq"){ frame[i].value /= 10; }
+        if ('P' in frame[i]){ frame[i].P /= 10; P = frame[i].P; frame[i] = {"id":"P", "value": P}; frame.push({"id":"pwr", "value":P}) }
+        if ('W' in frame[i]){ frame[i].W /= 1000; W = frame[i].W; frame[i] = {"id":"W", "value": W}; frame.push({"id":"enrg", "value":W}) }
+        if ('freq' in frame[i]){ frame[i].freq /= 10; frame[i] = {"id":"freq", "value": frame[i].freq}; }
 
         // обновить график с новым значением шкалы
-        if (frame[i].id === "scntr" && Gsminichart){
-            AmCharts.loadFile("http://" + location.host + "/samples.json?scntr=" + frame[i].value, {async: false}, function(data) {
+        if ("scntr" in frame[i] && Gsminichart){
+            AmCharts.loadFile("/samples.json?scntr=" + frame[i].scntr, {async: true}, function(data) {
                 Gsminichart.dataProvider = AmCharts.parseJSON(data);
               }
             );
@@ -234,7 +238,7 @@ function mkchart(id, param){
                 "theme": "black",
                 "creditsPosition": "top-right",
                 "dataLoader": {
-                    "url" : "http://" + location.host + "/samples.json?scntr=" + param,
+                    "url" : "/samples.json?scntr=" + param,
                     "showErrors": false,
                     "load": function( options, Gsminichart ) {
                             var pwrGraph = new AmCharts.AmGraph();

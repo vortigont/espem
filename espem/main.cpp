@@ -11,6 +11,7 @@
 #include "espem.h"
 
 #include <EmbUI.h>
+#include "interface.h"
 
 extern "C" int clock_gettime(clockid_t unused, struct timespec *tp);
 
@@ -34,11 +35,16 @@ void setup() {
 
   // Start framework, load config and connect WiFi
   embui.begin();
+  embui_actions_register();
 
   // create and run ESPEM object
   espem = new ESPEM();
 
-  if (espem && espem->begin(embui.paramVariant(FPSTR(V_UART)), embui.paramVariant(FPSTR(V_RX)), embui.paramVariant(FPSTR(V_TX))) ){
+  if (espem && espem->begin(  embui.paramVariant(FPSTR(V_UART)),
+                              embui.paramVariant(FPSTR(V_RX)),
+                              embui.paramVariant(FPSTR(V_TX))) 
+                            )
+  {
     if ( espem->tsSet( embui.paramVariant(FPSTR(V_EPOOLSIZE)), embui.paramVariant(FPSTR(V_SMPL_PERIOD)) ) ){
       espem->set_collector_state(mcstate_t::MC_RUN);
     }
@@ -49,8 +55,6 @@ void setup() {
     wver(request);
   });
 
-
-  //sync_parameters();    // sync UI params
 
   embui.setPubInterval(WEBUI_PUBLISH_INTERVAL);
 }

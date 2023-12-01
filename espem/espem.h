@@ -130,14 +130,14 @@ public:
      * 
      * @param offset 
      */
-    inline void setEnergyOffset(float offset){ nrg_offset = offset; };
+    void setEnergyOffset(int32_t offset){ nrg_offset = offset; };
 
     /**
      * @brief Get the Energy offset value
      * 
      * @return float 
      */
-    inline float getEnergyOffset(){return nrg_offset;};
+    int32_t getEnergyOffset(){return nrg_offset;};
 
 private:
 
@@ -146,7 +146,8 @@ private:
     uint8_t ts_id;
     mcstate_t ts_state = mcstate_t::MC_DISABLE;
 
-    float nrg_offset{0.0};
+    // energy offset
+    int32_t nrg_offset{0};
 
     // mqtt feeder id
     int _mqtt_feed_id{0};

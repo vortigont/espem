@@ -1,80 +1,89 @@
 // override variable with ESPEM's API version
 app_jsapi = 1;
 
+// default samples chart len
+var samples_len = 600;
+
 // raw data coming from the EmbUI handled here
-function rawdata_cb(obj) {
-    var frame = obj.block;
+unknown_pkg_callback = function (obj) {
+    console.log('Got my pkt:', obj);
+    let frame = obj.block;
     if (!obj.block){
         console.log('Message has no data block!');
         return;
     }
-    console.log('prcess...');
-    var U, I, P, W, pF;
+    //console.log('Process raw data:', frame);
+    let U, I, Pf, P, W, vals = [];
     for (var i = 0; i != frame.length; i++) if (typeof frame[i] == "object") {
         if (frame[i].stale === true){   // we have stale data for some reason
             GVchart.axes[0].setTopText('Error');
             GPFchart.axes[0].setTopText('Error');
             // set err value for display widgets
-            frame.push({"id":"cur", "value": "err"});
-            frame.push({"id":"pwr", "value": "err"});
-            frame.push({"id":"enrg", "value": "err"});
+            //delete frame[i];
+            frame.push({"id":"cur", "value": "err", 'html':true});
+            frame.push({"id":"pwr", "value": "err", 'html':true});
+            frame.push({"id":"enrg", "value": "err", 'html':true});
+            frame.shift();
             rdr.value(obj);
             return;
         }
-    
-        if ('U' in frame[i]){
-            frame[i].U /= 10;     // decivolts
-            GVchart.arrows[0].setValue(frame[i].U.toFixed(0));
-            GVchart.axes[0].setTopText(frame[i].U + ' Volts');
-            U = frame[i].U;
-            frame[i] = {'id':'U', 'value': U} // for left bar panel
-        }
-        if ('Pf' in frame[i]){
-            GPFchart.arrows[0].setValue(frame[i].Pf);
-            GPFchart.axes[0].setTopText('PF ' + frame[i].Pf + '%');
-            GPFchart.axes[0].bands[0].setEndValue(frame[i].Pf);
-            GPFchart.axes[0].bands[1].setStartValue(frame[i].Pf);
-            frame[i].Pf /= 100;
-            pF = frame[i].Pf;
-            frame[i] = {'id':'Pf', 'value': pF}
-        }
-        // values for 'displays'
-        if ('I' in frame[i]){
-            frame[i].I /= 1000; // normalize to Amps
-            I = frame[i].I; // for sampling chart data
-            frame[i] = {"id":"I", "value": I};
-            frame.push({"id":"cur", "value":I});  // for widget
-        }
-        if ('P' in frame[i]){ frame[i].P /= 10; P = frame[i].P; frame[i] = {"id":"P", "value": P}; frame.push({"id":"pwr", "value":P}) }
-        if ('W' in frame[i]){ frame[i].W /= 1000; W = frame[i].W; frame[i] = {"id":"W", "value": W}; frame.push({"id":"enrg", "value":W}) }
-        if ('freq' in frame[i]){ frame[i].freq /= 10; frame[i] = {"id":"freq", "value": frame[i].freq}; }
 
         // обновить график с новым значением шкалы
-        if ("scntr" in frame[i] && Gsminichart){
-            AmCharts.loadFile("/samples.json?scntr=" + frame[i].scntr, {async: true}, function(data) {
-                Gsminichart.dataProvider = AmCharts.parseJSON(data);
-              }
-            );
+        if (frame[i].scntr && Gsminichart){
+            samples_len = frame[i].scntr;
+            AmCharts.loadFile("/samples.json?scntr=" + frame[i].scntr, {async: true}, function(data) { Gsminichart.dataProvider = AmCharts.parseJSON(data); } );
             Gsminichart.validateData();
             return;
         }
 
-        // required for left-menu renderer and widgets
-        frame[i].html = true;
+        frame[i].U /= 10
+        frame[i].I /= 1000 // normalize to Amps
+        frame[i].P /= 10
+        frame[i].W /= 1000
+        frame[i].freq /= 10
+        W = frame[i].W
+        U = frame[i].U
+        I = frame[i].I
+        P = frame[i].P
+
+        GVchart.arrows[0].setValue(frame[i].U.toFixed(0));
+        GVchart.axes[0].setTopText(frame[i].U + ' Volts');
+
+        GPFchart.arrows[0].setValue(frame[i].Pf);
+        GPFchart.axes[0].setTopText('PF ' + frame[i].Pf + '%');
+        GPFchart.axes[0].bands[0].setEndValue(frame[i].Pf);
+        GPFchart.axes[0].bands[1].setStartValue(frame[i].Pf);
+        frame[i].Pf /= 100
+        Pf = frame[i].Pf
+
+        // for left bar panel
+        vals.push({'id':'U', 'value': frame[i].U, 'html':true})
+        vals.push({'id':'Pf', 'value': frame[i].Pf, 'html':true})
+        vals.push({"id":"I", "value":frame[i].I, 'html':true})
+        vals.push({"id":"P", "value":frame[i].P, 'html':true})
+        vals.push({"id":"W", "value":frame[i].W, 'html':true})
+        vals.push({"id":"freq", "value":frame[i].freq, 'html':true})
+        // for widgets
+        vals.push({"id":"cur", "value":frame[i].I, 'html':true})
+        vals.push({"id":"pwr", "value":frame[i].P, 'html':true})
+        vals.push({"id":"enrg", "value":frame[i].W, 'html':true})
     }
 
     // skip if there is no Voltage data
-    if (!U)
-        return;
+    if (!U) return;
 
+    // overwrite with new vals
+    obj.block = vals;
     // Power metrics graph
-    Gsminichart.dataProvider.shift();
-    Gsminichart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": pF } );
+    if (Gsminichart.dataProvider.length > samples_len) Gsminichart.dataProvider.shift();
+    Gsminichart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": Pf } );
     Gsminichart.validateData();
 
+    console.log("vals:", obj)
     // pass data to the renderer to make it available under Menu/display area
     rdr.value(obj);
 }
+
 
 var GVchart = null;
 var GPFchart = null;
@@ -93,9 +102,9 @@ function mkchart(id, param){
     switch (id) {
         case "gaugeV" : GVchart = AmCharts.makeChart(element, {
             "type": "gauge",
-            "marginBottom": -10,
             "marginTop": 25,
-            "startDuration": 2,
+            "marginBottom": -10,
+            "startDuration": 1,
             "accessible": false,
             "creditsPosition": "bottom-left",
             "fontSize": 13,
@@ -120,7 +129,7 @@ function mkchart(id, param){
                     "startValue": 190,
                     "topText": "---",
                     "topTextYOffset": 30,
-                    "valueInterval": 20,
+                    "valueInterval": 10,
                     "bands": [
                         {
                             "alpha": 0.7,
@@ -167,8 +176,8 @@ function mkchart(id, param){
                 "creditsPosition": "bottom-left",
                 "arrows": [
                     {
-                        "alpha": 1,
                         "id": "PF",
+                        "alpha": 1,
                         "innerRadius": "95%",
                         "nailRadius": 0,
                         "radius": "170%",
@@ -197,26 +206,18 @@ function mkchart(id, param){
                                 "color": "#47ea19",
                                 "startValue": 0,
                                 "endValue": 100,
-                                "gradientRatio": [
-                                    0.5,
-                                    0,
-                                    -0.5
-                                ],
+                                "gradientRatio": [0.5, 0, -0.5],
                                 "id": "GaugeBand-1",
                                 "innerRadius": "105%",
-                                "radius": "170%"
+                                "radius": "160%"
                             },
                             {
                                 "color": "#b5f0fc",
                                 "endValue": 100,
-                                "gradientRatio": [
-                                    0.5,
-                                    0,
-                                    -0.5
-                                ],
+                                "gradientRatio": [0.5,0,-0.5],
                                 "id": "GaugeBand-2",
                                 "innerRadius": "105%",
-                                "radius": "170%",
+                                "radius": "160%",
                                 "startValue": 100
                             }
                         ]

@@ -3,8 +3,10 @@
 // Set of flash-strings that might be reused multiple times within the code
 
 // General
-//static constexpr const char C_ONE[] = "1";
+static constexpr const char C_espem[] = "espem";
 static constexpr const char C_mkchart[] = "mkchart";
+static constexpr const char C_rawdata[] = "rawdata";
+static constexpr const char C_mqtt_pzem_jmetrics[] = "pub/pzem/jmetrics";
 
 //////////////////////
 // Configuration variables names  - V_ prefix for 'Variable'

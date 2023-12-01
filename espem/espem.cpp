@@ -9,27 +9,32 @@
 #include "espem.h"
 #include "EmbUI.h"      // EmbUI framework
 
-#ifdef ESP32
- #define MAX_FREE_MEM_BLK ESP.getMaxAllocHeap()
-#else
- #define MAX_FREE_MEM_BLK ESP.getMaxFreeBlockSize()
-#endif
-
-#define PUB_JSSIZE  800
+#define MAX_FREE_MEM_BLK ESP.getMaxAllocHeap()
+#define PUB_JSSIZE  1024
 // sprintf template for json sampling data
 #define JSON_SMPL_LEN 85    // {"t":1615496537000,"U":229.50,"I":1.47,"P":1216,"W":5811338,"hz":50.0,"pF":0.64},
 static const char PGsmpljsontpl[] PROGMEM = "{\"t\":%u000,\"U\":%.2f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f},";
 static const char PGdatajsontpl[] PROGMEM = "{\"age\":%llu,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f}";
 
 // HTTP responce messages
-static const char PROGMEM PGsmpld[] = "Metrics collector disabled";
-static const char PROGMEM PGdre[] = "Data read error";
-static const char PROGMEM PGacao[] = "Access-Control-Allow-Origin";
+static const char PGsmpld[] = "Metrics collector disabled";
+static const char PGdre[] = "Data read error";
+static const char PGacao[] = "Access-Control-Allow-Origin";
 static const char* PGmimetxt = "text/plain";
 //static const char* PGmimehtml = "text/html; charset=utf-8";
 
 using namespace pzmbus;     // use general pzem abstractions
 
+
+class FrameSendMQTTRaw : public FrameSendMQTT {
+public:
+  FrameSendMQTTRaw(EmbUI *emb) : FrameSendMQTT(emb){}
+  void send(const JsonVariantConst& data) override {
+    if (data[P_pkg] == C_espem){
+      _eu->publish(C_mqtt_pzem_jmetrics, data[P_block]);
+    }
+  };
+};
 
 bool ESPEM::begin(const uart_port_t p, int rx, int tx){
   LOG(printf, "espem.begin: port: %d, rx_pin: %d, tx_pin:%d\n", p, rx, tx);
@@ -86,6 +91,9 @@ bool ESPEM::begin(const uart_port_t p, int rx, int tx){
 	// generate json with sampled meter data
   embui.server.on(PSTR("/samples"), HTTP_GET, std::bind(&ESPEM::wsamples, this, std::placeholders::_1));
   embui.server.on(PSTR("/samples.json"), HTTP_GET, std::bind(&ESPEM::wsamples, this, std::placeholders::_1));
+
+  // create MQTT rawdata feeder and add into the chain
+  _mqtt_feed_id = embui.feeders.add( std::make_unique<FrameSendMQTTRaw>(&embui) );
 
   return true;
 }
@@ -223,24 +231,27 @@ void ESPEM::wsamples(AsyncWebServerRequest *request) {
   request->send(response);
 }
 
-// publish meter data via WebSocket (a periodic Task)
+// publish meter data via availbale EmbUI feeders (a periodic Task)
 void ESPEM::wspublish(){
   if (!embui.feeders.available() || !pz)  // exit, if there are no clients connected
-      return;
+    return;
 
   const auto m = pz->getMetricsPZ004();
 
-  Interface interf(&embui.feeders, PUB_JSSIZE);
-  interf.json_frame("rawdata");
+  DynamicJsonDocument doc(PUB_JSSIZE);
+  JsonObject obj = doc.to<JsonObject>();
+  doc["stale"] = pz->getState()->dataStale();
+  doc["age"] = pz->getState()->dataAge();
+  doc["U"] = m->voltage;
+  doc["I"] = m->current;
+  doc["P"] = m->power;
+  doc["W"] = m->energy + nrg_offset;
+  doc["Pf"] = m->pf;
+  doc["freq"] = m->freq;
 
-  interf.value("stale", pz->getState()->dataStale(), false);
-  interf.value("age", pz->getState()->dataAge());
-  interf.value("U", m->voltage);
-  interf.value("I", m->current);
-  interf.value("P", m->power);
-  interf.value("W", m->energy + nrg_offset);
-  interf.value("Pf", m->pf);
-  interf.value("freq", m->freq);
+  Interface interf(&embui.feeders, 128);
+  interf.json_frame(C_espem);
+  interf.jobject(doc, true);
   interf.json_frame_flush();
 }
 

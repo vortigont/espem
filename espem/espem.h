@@ -148,6 +148,9 @@ private:
 
     float nrg_offset{0.0};
 
+    // mqtt feeder id
+    int _mqtt_feed_id{0};
+
     String& mktxtdata ( String& txtdata);
 
     /**

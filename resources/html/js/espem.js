@@ -6,7 +6,6 @@ var samples_len = 600;
 
 // raw data coming from the EmbUI handled here
 unknown_pkg_callback = function (obj) {
-    console.log('Got my pkt:', obj);
     let frame = obj.block;
     if (!obj.block){
         console.log('Message has no data block!');
@@ -79,7 +78,6 @@ unknown_pkg_callback = function (obj) {
     Gsminichart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": Pf } );
     Gsminichart.validateData();
 
-    console.log("vals:", obj)
     // pass data to the renderer to make it available under Menu/display area
     rdr.value(obj);
 }

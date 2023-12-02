@@ -19,12 +19,16 @@
     #define DEFAULT_WS_UPD_RATE     2     // ws clients update rate, sec
 #endif
 
-#ifndef ESPEM_MEMPOOL
-    #define ESPEM_MEMPOOL 300             // samples to store in ringbuff by default (5 min)
-#endif
-
 #define PZEM_ID     1
 #define PORT_1_ID   1
+
+#define TS_T1_CNT       900              // default Tier 1 TimeSeries count
+#define TS_T1_INTERVAL  1                // default Tier 1 TimeSeries interval (1 sec)
+#define TS_T2_CNT       1000             // default Tier 2 TimeSeries count
+#define TS_T2_INTERVAL  15               // default Tier 2 TimeSeries interval (15 sec)
+#define TS_T3_CNT       1000             // default Tier 3 TimeSeries count
+#define TS_T3_INTERVAL  300              // default Tier 3 TimeSeries interval (5 min)
+
 
 // Metrics collector state
 enum class mcstate_t{MC_DISABLE=0, MC_RUN, MC_PAUSE};
@@ -32,26 +36,79 @@ enum class mcstate_t{MC_DISABLE=0, MC_RUN, MC_PAUSE};
 // TaskScheduler - Let the runner object be a global, single instance shared between object files.
 extern Scheduler ts;
 
-class ESPEM {
+class DataStorage {
+    // TimeSeries COntainer
+    TSContainer<pz004::metrics> tsc;
+    std::vector<uint8_t> tsids;
+
+    // energy offset
+    int32_t nrg_offset{0};
+
 
 public:
 
-    //std::unique_ptr<PZPool> pzpool;        // PZEM object
+    /**
+     * @brief setup TimeSeries Container based on saved params in EmbUI config
+     * 
+     */
+    void reset();
+
+    /**
+     * @brief Set the Energy offset value
+     * tis will offset energy value replies from PZEM
+     * i.e. to match some other counter, etc...
+     * 
+     * @param offset 
+     */
+    void setEnergyOffset(int32_t offset){ nrg_offset = offset; }
+
+    /**
+     * @brief Get the Energy offset value
+     * 
+     * @return float 
+     */
+    int32_t getEnergyOffset(){ return nrg_offset; }
+
+    const TSContainer<pz004::metrics>& getTSC(){ return tsc; }
+
+    /**
+     * @brief - get metrics storage capacity, if any
+     * 
+     */
+    int getMetricsCap() const { return tsc.getTScap(); }
+
+    int getMetricsSize() const { return tsc.getTSsize(); }
+
+    /**
+     * @brief push new data to TimeSeries storage
+     * 
+     * @param m 
+     */
+    void push(const pz004::metrics *m);
+
+    void wsamples(AsyncWebServerRequest *request);
+
+    // wrappers
+    void purge(){ tsc.purge(); }
+
+};
+
+class Espem {
+
+public:
+
     PZ004 *pz = nullptr;
+
+    // TimeSeries data storage
+    DataStorage ds;
 
     /**
      * Class constructor
      * uses predefined values of a ESPEM_CFG
      */
-    ESPEM(){}
+    Espem(){}
 
-    /**
-     * Class constructor
-     * initialized with customized ESPEM_CFG
-     */
-    //ESPEM(const ESPEM_CFG& _cfg) : ecfg(_cfg){}
-
-    ~ESPEM(){
+    ~Espem(){
         ts.deleteTask(t_uiupdater);
         delete pz;
         pz = nullptr;
@@ -82,15 +139,18 @@ public:
 
     void wpmdata(AsyncWebServerRequest *request);
 
-    void wsamples(AsyncWebServerRequest *request);
-
     /**
      * @brief - set webUI refresh rate in seconds
      * @param seconds - webUI interval
      */
     uint8_t set_uirate(uint8_t seconds);
 
-    uint8_t get_uirate();
+    /**
+     * @brief Get the ui refresh rate
+     * 
+     * @return uint8_t 
+     */
+    uint8_t get_uirate() const;
 
 
     /**
@@ -101,53 +161,15 @@ public:
     bool meterPolling(bool active){ return pz->autopoll(active); };
     bool meterPolling() const { return pz->autopoll(); };
 
-    /**
-     * @brief - get metrics storage capacity, if any
-     * 
-     */
-    int getMetricsCap() const { return tsc.getTScap(); }
-
-    int getMetricsSize() const { return tsc.getTSsize(); }
-
-
-    /**
-     * @brief set TimeSeries Container params
-     * 
-     * @param size - number of elements to store
-     * @param interval - series interval in seconds
-     * @return true - on success
-     * @return false - on error
-     */
-    bool tsSet(size_t size = ESPEM_MEMPOOL, uint32_t interval = 1);
-
     mcstate_t set_collector_state(mcstate_t state);
     mcstate_t get_collector_state() const { return ts_state; };
-
-    /**
-     * @brief Set the Energy offset value
-     * tis will offset energy value replies from PZEM
-     * i.e. to match some other counter, etc...
-     * 
-     * @param offset 
-     */
-    void setEnergyOffset(int32_t offset){ nrg_offset = offset; };
-
-    /**
-     * @brief Get the Energy offset value
-     * 
-     * @return float 
-     */
-    int32_t getEnergyOffset(){return nrg_offset;};
 
 private:
 
     UartQ *qport = nullptr;
-    TSContainer<pz004::metrics> tsc;
-    uint8_t ts_id;
     mcstate_t ts_state = mcstate_t::MC_DISABLE;
-
-    // energy offset
-    int32_t nrg_offset{0};
+    // Tasks
+    Task t_uiupdater;
 
     // mqtt feeder id
     int _mqtt_feed_id{0};
@@ -160,8 +182,6 @@ private:
      */
     void wspublish();
 
-    // Tasks
-    Task t_uiupdater;
 
     // make json string out of array provided
     // bool W - include energy counter in json
@@ -178,3 +198,4 @@ private:
  * @param m 
  */
 void msgdebug(uint8_t id, const RX_msg* m);
+

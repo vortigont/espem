@@ -10,8 +10,12 @@ static constexpr const char C_mqtt_pzem_jmetrics[] = "pub/pzem/jmetrics";
 
 //////////////////////
 // Configuration variables names  - V_ prefix for 'Variable'
-static constexpr const char V_EPOOLSIZE[] = "epoolsize";        // sample pool size
-static constexpr const char V_SMPL_PERIOD[] = "smlp_period";    // sampling period
+static constexpr const char V_TS_T1_CNT[] = "t1cnt";            // default Tier 1 TimeSeries count
+static constexpr const char V_TS_T1_INT[] = "t1int";            // default Tier 1 TimeSeries interval
+static constexpr const char V_TS_T2_CNT[] = "t2cnt";            // default Tier 2 TimeSeries count
+static constexpr const char V_TS_T2_INT[] = "t2int";            // default Tier 2 TimeSeries interval
+static constexpr const char V_TS_T3_CNT[] = "t3cnt";            // default Tier 3 TimeSeries count
+static constexpr const char V_TS_T3_INT[] = "t3int";            // default Tier 3 TimeSeries interval
 static constexpr const char V_RX[] = "rx";                      // rx pin
 static constexpr const char V_TX[] = "tx";                      // tx ping
 static constexpr const char V_UART[] = "uart";                  // uart interface

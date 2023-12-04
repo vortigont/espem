@@ -273,7 +273,7 @@ uint8_t Espem::set_uirate(uint8_t seconds){
   return seconds;
 }
 
-uint8_t Espem::get_uirate() const {
+uint8_t Espem::get_uirate(){
   if (t_uiupdater.isEnabled())
     return (t_uiupdater.getInterval() / TASK_SECOND);
 
@@ -285,15 +285,15 @@ void DataStorage::reset(){
   tsids.clear();
 
   uint8_t a;
-  a = tsc.addTS(embui.paramVariant(V_TS_T1_CNT), time(nullptr), embui.paramVariant(V_TS_T1_INT), "Tier 1");
+  a = tsc.addTS(embui.paramVariant(V_TS_T1_CNT), time(nullptr), embui.paramVariant(V_TS_T1_INT), "Tier 1", 1);
   tsids.push_back(a);
   //LOG(printf, "Add TS: %d\n", a);
 
-  a = tsc.addTS(embui.paramVariant(V_TS_T2_CNT), time(nullptr), embui.paramVariant(V_TS_T2_INT), "Tier 2");
+  a = tsc.addTS(embui.paramVariant(V_TS_T2_CNT), time(nullptr), embui.paramVariant(V_TS_T2_INT), "Tier 2", 2);
   tsids.push_back(a);
   //LOG(printf, "Add TS: %d\n", a);
 
-  a = tsc.addTS(embui.paramVariant(V_TS_T3_CNT), time(nullptr), embui.paramVariant(V_TS_T3_INT), "Tier 3");
+  a = tsc.addTS(embui.paramVariant(V_TS_T3_CNT), time(nullptr), embui.paramVariant(V_TS_T3_INT), "Tier 3", 3);
   tsids.push_back(a);
   //LOG(printf, "Add TS: %d\n", a);
 
@@ -302,7 +302,7 @@ void DataStorage::reset(){
     for ( auto i : tsids ){
       auto t = tsc.getTS(i);
       if (t){
-        LOG(printf, "%s: size:%d, interval:%u\n", t->getDescr(), t->capacity, t->getInterval());
+        LOG(printf, "%s: size:%d, interval:%u, mem:%u\n", t->getDescr(), t->capacity, t->getInterval(), t->capacity * sizeof(pz004::metrics));
       }
     }
   )

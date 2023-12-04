@@ -8,7 +8,7 @@
 
 #define MAX_UI_UPDATE_RATE 30
 
-extern ESPEM *espem;
+extern Espem *espem;
 
 static const char* chart_css = "graphwide";
 
@@ -30,6 +30,11 @@ void ui_page_main(Interface *interf, const JsonObject *data, const char* action)
     // application manifest
     interf->json_section_manifest(C_DICT[lang][CD::ESPEM_H], embui.macid(), ESPEM_JSAPI_VERSION, FW_VERSION_STRING);    // HEADLINE for WebUI
     interf->json_section_end(); // json_section_manifest
+
+    // load uidata objects
+    interf->json_section_uidata();
+        interf->uidata_xload(C_espem_ui, "js/espem.ui.json", false, ESPEM_UI_VERSION);
+    interf->json_section_end();
 
     block_menu(interf);                           // Строим UI блок с меню выбора других секций
     interf->json_frame_flush();                   // send frame
@@ -97,7 +102,7 @@ void ui_page_espem(Interface *interf, const JsonObject *data, const char* action
     interf->jscall("gsmini", C_mkchart, "Power chart", chart_css, params);          // Power chart
 
     // slider for the amount of metric samples to be plotted on a chart
-    interf->range(A_SMPLCNT, embui.paramVariant(V_SMPLCNT).as<int>(), 0, (int)espem->getMetricsCap(), 10, C_DICT[lang][CD::MScale], true);
+    interf->range(A_SMPLCNT, embui.paramVariant(V_SMPLCNT).as<int>(), 0, (int)espem->ds.getMetricsCap(), 10, C_DICT[lang][CD::MScale], true);
 
     interf->json_frame_flush();     // flush frame
 }
@@ -112,9 +117,44 @@ void user_settings_frame(Interface *interf, const JsonObject *data, const char* 
  * 
  */
 void block_page_espemset(Interface *interf, const JsonObject *data, const char* action){
-    if (!interf) return;
     interf->json_frame_interface();
+        interf->json_section_uidata();
+        interf->uidata_pick("espem.ui.settings.cfg");
+    interf->json_frame_flush();
 
+    interf->json_frame_value();
+        interf->value(V_UART, embui.paramVariant(V_UART).as<int>());    // Uart port
+        interf->value(V_RX, embui.paramVariant(V_RX).as<int>());
+        interf->value(V_TX, embui.paramVariant(V_TX).as<int>());
+        interf->value(V_EOFFSET, espem->ds.getEnergyOffset());
+        // TimeSeries capacity
+        interf->value(V_TS_T1_CNT, embui.paramVariant(V_TS_T1_CNT).as<int>());
+        interf->value(V_TS_T1_INT, embui.paramVariant(V_TS_T1_INT).as<int>());
+        interf->value(V_TS_T2_CNT, embui.paramVariant(V_TS_T2_CNT).as<int>());
+        interf->value(V_TS_T2_INT, embui.paramVariant(V_TS_T2_INT).as<int>());
+        interf->value(V_TS_T3_CNT, embui.paramVariant(V_TS_T3_CNT).as<int>());
+        interf->value(V_TS_T3_INT, embui.paramVariant(V_TS_T3_INT).as<int>());
+        // collector state
+        interf->value(A_ECOLLECTORSTATE, (uint8_t)espem->get_collector_state());
+    interf->json_frame_flush();
+
+
+    interf->json_frame_interface();
+    interf->json_section_content();
+
+    auto tsc = espem->ds.getTSC();
+    for ( unsigned i=1; i!=4; ++i ){
+        char buff[64];
+        char key[8];
+        std::snprintf(buff, 64, "Used: %hu/%hu, %u kib", tsc.getTSsize(i), tsc.getTScap(i), tsc.getTScap(i) * 28 / 1024);   // sizeof(pz004::metric)
+        std::snprintf(key,8, "t%umem", i);
+        interf->constant(std::string_view(key), std::string_view(buff));       // capacity and memory usage
+    }
+
+    interf->json_frame_flush();
+
+
+/*
     // replacing page with a new one with settings
     interf->json_section_main(A_ui_page_espem_setup, C_DICT[lang][CD::ESPEMSet]);
 
@@ -131,7 +171,7 @@ void block_page_espemset(Interface *interf, const JsonObject *data, const char* 
     // counter opts
     interf->spacer("Energy counter options");
     interf->json_section_begin(A_SET_PZOPTS);
-        interf->number(V_EOFFSET, espem->getEnergyOffset(), "Energy counter offset");
+        interf->number(V_EOFFSET, espem->ds.getEnergyOffset(), "Energy counter offset");
         interf->button(button_t::submit, A_SET_PZOPTS, T_DICT[lang][TD::D_Apply]);
     interf->json_section_end();     // end of "energy"
 
@@ -139,26 +179,22 @@ void block_page_espemset(Interface *interf, const JsonObject *data, const char* 
 
     interf->spacer("Metrics collector options");
     String _msg("Metrics pool capacity: ");
-    _msg += espem->getMetricsSize();
+    _msg += espem->ds.getMetricsSize();
     _msg += "/";
-    _msg += espem->getMetricsCap();                         // current number of metrics samples
+    _msg += espem->ds.getMetricsCap();              // current number of metrics samples
     _msg += " samples";
 
     interf->constant("mcap", _msg);
 
-    interf->json_section_line(A_set_espem_pool);
-        interf->number(V_EPOOLSIZE, embui.paramVariant(V_EPOOLSIZE).as<int>(), "RAM pool size, samples");          // Memory pool for metrics data, samples
-        interf->number(V_SMPL_PERIOD, embui.paramVariant(V_SMPL_PERIOD).as<int>(), "Sampling period");                  // sampling period, sec
-    interf->json_section_end();     // end of line
     // Button "Apply Metrics pool settings"
     interf->button(button_t::submit, A_set_espem_pool, T_DICT[lang][TD::D_Apply]);
 
-    /*
-	 * Define metrics collector state
-	 *   0: Disabled, memory released
-	 *   1: Running and storing metrics in RAM
-	 *   2: Paused, collecting but not storing, memory reserved 
-	 */
+    //
+	// Define metrics collector state
+	//   0: Disabled, memory released
+	//   1: Running and storing metrics in RAM
+	//   2: Paused, collecting but not storing, memory reserved 
+	//
     interf->select(A_ECOLLECTORSTATE, (uint8_t)espem->get_collector_state(), "Metrics collector status", true);
         interf->option(0, "Disabled");
         interf->option(1, "Running");
@@ -166,15 +202,8 @@ void block_page_espemset(Interface *interf, const JsonObject *data, const char* 
     interf->json_section_end();     // select
 
     interf->json_frame_flush();     // flush frame
+*/
 }
-
-
-/**
- * обработчик статуса (периодического опроса контроллера веб-приложением)
-void pubCallback(Interface *interf, const JsonObject *data, const char* action){
-    basicui::embuistatus(interf);
-}
- */
 
 
 // Callback ACTIONS
@@ -184,11 +213,15 @@ void pubCallback(Interface *interf, const JsonObject *data, const char* action){
  */
 void set_sampler_opts(Interface *interf, const JsonObject *data, const char* action){
     if (!data) return;
+    // save sampling storage capacity values
+    SETPARAM(V_TS_T1_CNT);
+    SETPARAM(V_TS_T1_INT);
+    SETPARAM(V_TS_T2_CNT);
+    SETPARAM(V_TS_T2_INT);
+    SETPARAM(V_TS_T3_CNT);
+    SETPARAM(V_TS_T3_INT);
 
-    SETPARAM(V_EPOOLSIZE);
-    SETPARAM(V_SMPL_PERIOD);
-
-    espem->tsSet((*data)[V_EPOOLSIZE].as<unsigned int>(), (*data)[V_SMPL_PERIOD].as<unsigned int>());
+    espem->ds.reset();
     // display main page
     if (interf) ui_page_espem(interf, nullptr, NULL);
 }
@@ -223,8 +256,8 @@ void set_directctrls(Interface *interf, const JsonObject *data, const char* acti
     if (sv.compare(V_ECOLLECTORSTATE) == 0){
         uint8_t new_state = (*data)[A_ECOLLECTORSTATE];
         // reset TS Container if empty and we need to start it
-        if (espem->get_collector_state() == mcstate_t::MC_DISABLE && new_state >0)
-            espem->tsSet(embui.paramVariant(V_EPOOLSIZE), embui.paramVariant(V_SMPL_PERIOD));
+        //if (espem->get_collector_state() == mcstate_t::MC_DISABLE && new_state >0)
+        //    espem->ds.tsSet(embui.paramVariant(V_EPOOLSIZE), embui.paramVariant(V_SMPL_PERIOD));
 
         espem->set_collector_state((mcstate_t)new_state);
         LOG(printf, "UI: Set TS Collector state to: %d\n", (int)espem->get_collector_state() );
@@ -279,7 +312,7 @@ void set_pzopts(Interface *interf, const JsonObject *data, const char* action){
     if (!data) return;
 
     SETPARAM(V_EOFFSET);
-    espem->setEnergyOffset(embui.paramVariant(V_EOFFSET));
+    espem->ds.setEnergyOffset(embui.paramVariant(V_EOFFSET));
 
     // display main page
     if (interf) ui_page_espem(interf, nullptr, NULL);
@@ -301,13 +334,18 @@ void embui_actions_register(){
      * регистрируем свои переменные
      */
     embui.var_create(V_UI_UPDRT, DEFAULT_WS_UPD_RATE);       // WebUI update rate
-    embui.var_create(V_SMPL_PERIOD, 1);                      // 
-    embui.var_create(V_EPOOLSIZE, ESPEM_MEMPOOL);            // metrics collector mem pool size, KiB
+    // Time Series values
+    embui.var_create(V_TS_T1_CNT, TS_T1_CNT);
+    embui.var_create(V_TS_T1_INT, TS_T1_INTERVAL);
+    embui.var_create(V_TS_T2_CNT, TS_T2_CNT);
+    embui.var_create(V_TS_T2_INT, TS_T2_INTERVAL);
+    embui.var_create(V_TS_T3_CNT, TS_T3_CNT);
+    embui.var_create(V_TS_T3_INT, TS_T3_INTERVAL);
     embui.var_create(V_UART, 0x1);                           // default UART port UART_NUM_1
     embui.var_create(V_RX, -1);                              // RX pin (default)
     embui.var_create(V_TX, -1);                              // TX pin (default)
     embui.var_create(V_TX, -1);                              // TX pin (default)
-    embui.var_create(V_EOFFSET, 0.0);                        // Energy counter offset
+    embui.var_create(V_EOFFSET, 0);                          // Energy counter offset
 
     /**
      * обработчики действий
@@ -324,9 +362,9 @@ void embui_actions_register(){
 
 
     // активности
-    embui.action.add(A_set_espem_pool,  set_sampler_opts);        // set options for espem
+    embui.action.add(A_SET_MCOLLECTOR,  set_sampler_opts);   // set options for TimeSeries collector
     embui.action.add(A_SET_UART,   set_uart_opts);           // set UART gpios
-    embui.action.add(A_SET_PZOPTS,   set_pzopts);            // set options for PZEM
+    embui.action.add(A_SET_PZOPTS,   set_pzopts);            // set options for PZEM (egergy offset)
 
     // direct controls
     embui.action.add(A_DIRECT_CTL,  set_directctrls);        // process onChange update controls

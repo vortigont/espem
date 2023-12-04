@@ -150,7 +150,7 @@ public:
      * 
      * @return uint8_t 
      */
-    uint8_t get_uirate() const;
+    uint8_t get_uirate();   // TaskScheduler class does not allow it to declare const'ness
 
 
     /**

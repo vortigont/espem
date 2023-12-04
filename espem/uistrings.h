@@ -4,6 +4,7 @@
 
 // General
 static constexpr const char C_espem[] = "espem";
+static constexpr const char C_espem_ui[] = "espem.ui";
 static constexpr const char C_mkchart[] = "mkchart";
 static constexpr const char C_rawdata[] = "rawdata";
 static constexpr const char C_mqtt_pzem_jmetrics[] = "pub/pzem/jmetrics";
@@ -39,7 +40,8 @@ static constexpr const char A_DIRECT_CTL[] = "dctl_*";              // checkboxe
 // UI handlers - A_ prefix for 'Action'
 static constexpr const char A_set_espem_pool[] = "set_espem_pool";  //  ESPEM settings update 
 static constexpr const char A_SET_UART[] =  "set_uart";
-static constexpr const char A_SET_PZOPTS[] =  "set_pzem";
+static constexpr const char A_SET_PZOPTS[] =  "set_nrgoffset";
+static constexpr const char A_SET_MCOLLECTOR[] = "set_mcollector";    // apply metrics collector settings
 
 // onChange controls actions
 static constexpr const char A_EPOLLENA[] = "dctl_poll";             // Enable/disable poller

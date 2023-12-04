@@ -21,6 +21,7 @@
 #define FW_VERSION_STRING   TOSTRING(FW_VERSION_MAJOR) "." TOSTRING(FW_VERSION_MINOR) "." TOSTRING(FW_VERSION_REVISION)
 
 #define ESPEM_JSAPI_VERSION     1
+#define ESPEM_UI_VERSION        1
 
 
 #define BAUD_RATE       115200  // serial debug port baud rate

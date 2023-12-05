@@ -122,8 +122,8 @@ String& Espem::mktxtdata ( String& txtdata) {
 
 // compat method for v 1.x cacti scripts
 void Espem::wpmdata(AsyncWebServerRequest *request) {
-  if ( !ds.getTSC().getTScnt() ) {
-    request->send(503, PGmimetxt, FPSTR(PGdre) );
+  if ( !ds.getTSsize(1) ) {
+    request->send(503, PGmimetxt, PGdre );
     return;
   }
 
@@ -153,9 +153,15 @@ void Espem::wdatareply(AsyncWebServerRequest *request){
 
 // return json-formatted response for in-RAM sampled data
 void DataStorage::wsamples(AsyncWebServerRequest *request) {
+  uint8_t id = 1;           // default ts id
+
+  if (request->hasParam("tsid")) {
+    AsyncWebParameter* p = request->getParam("tsid");
+    id = p->value().toInt();
+  }
 
   // check if there is any sampled data
-  if ( !tsc.getTScnt() ) {
+  if ( !getTSsize(id) ) {
     request->send_P(503, PGmimejson, "[]");
     return;
   }
@@ -164,7 +170,6 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
   // So I'm going to generate it on-the-fly and stream to client in chunks
 
   size_t cnt = 0;           // cnt - return last 'cnt' samples, 0 - all samples
-  uint8_t id = 1;           // default ts id
 
   if (request->hasParam("scntr")){
     AsyncWebParameter* p = request->getParam("scntr");
@@ -172,13 +177,8 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
       cnt = p->value().toInt();
   }
 
-  if (request->hasParam("tsid")){
-    AsyncWebParameter* p = request->getParam("tsid");
-    id = p->value().toInt();
-  }
 
-
-  const auto ts = tsc.getTS(id);
+  const auto ts = getTS(id);
   if (!ts)
     request->send_P(503, PGmimejson, "[]");
 
@@ -281,26 +281,26 @@ uint8_t Espem::get_uirate(){
 }
 
 void DataStorage::reset(){
-  tsc.purge();
+  purge();
   tsids.clear();
 
   uint8_t a;
-  a = tsc.addTS(embui.paramVariant(V_TS_T1_CNT), time(nullptr), embui.paramVariant(V_TS_T1_INT), "Tier 1", 1);
+  a = addTS(embui.paramVariant(V_TS_T1_CNT), time(nullptr), embui.paramVariant(V_TS_T1_INT), "Tier 1", 1);
   tsids.push_back(a);
   //LOG(printf, "Add TS: %d\n", a);
 
-  a = tsc.addTS(embui.paramVariant(V_TS_T2_CNT), time(nullptr), embui.paramVariant(V_TS_T2_INT), "Tier 2", 2);
+  a = addTS(embui.paramVariant(V_TS_T2_CNT), time(nullptr), embui.paramVariant(V_TS_T2_INT), "Tier 2", 2);
   tsids.push_back(a);
   //LOG(printf, "Add TS: %d\n", a);
 
-  a = tsc.addTS(embui.paramVariant(V_TS_T3_CNT), time(nullptr), embui.paramVariant(V_TS_T3_INT), "Tier 3", 3);
+  a = addTS(embui.paramVariant(V_TS_T3_CNT), time(nullptr), embui.paramVariant(V_TS_T3_INT), "Tier 3", 3);
   tsids.push_back(a);
   //LOG(printf, "Add TS: %d\n", a);
 
   LOG(println, "Setup TimeSeries DB:");
   LOG_CALL(
     for ( auto i : tsids ){
-      auto t = tsc.getTS(i);
+      auto t = getTS(i);
       if (t){
         LOG(printf, "%s: size:%d, interval:%u, mem:%u\n", t->getDescr(), t->capacity, t->getInterval(), t->capacity * sizeof(pz004::metrics));
       }
@@ -320,13 +320,13 @@ mcstate_t Espem::set_collector_state(mcstate_t state){
   switch (state) {
     case mcstate_t::MC_RUN : {
       if (ts_state == mcstate_t::MC_RUN) return mcstate_t::MC_RUN;
-      if (!ds.getMetricsCap()) ds.reset();        // reinitialize TS Container if empty
+      if (!ds.getTScap()) ds.reset();        // reinitialize TS Container if empty
 
         // attach collector's callback
         pz->attach_rx_callback([this](uint8_t id, const RX_msg* m){
           // collect time-series data
           if (!pz->getState()->dataStale()){
-            ds.push(pz->getMetricsPZ004());
+            ds.push(*(pz->getMetricsPZ004()), time(nullptr));
           }
           #ifdef ESPEM_DEBUG
             if (m) msgdebug(id, m);          // it will print every data packet coming from PZEM
@@ -360,8 +360,3 @@ void msgdebug(uint8_t id, const RX_msg* m){
 */
     pz004::rx_msg_prettyp(m);
 }   
-
-
-void DataStorage::push(const pz004::metrics *m){
-  tsc.push(*m, time(nullptr));
-}

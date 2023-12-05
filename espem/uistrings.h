@@ -6,7 +6,8 @@
 static constexpr const char C_espem[] = "espem";
 static constexpr const char C_espem_ui[] = "espem.ui";
 static constexpr const char C_mkchart[] = "mkchart";
-static constexpr const char C_rawdata[] = "rawdata";
+static constexpr const char C_mkgauge[] = "mkgauge";
+static constexpr const char C_gsmini[] = "gsmini";
 static constexpr const char C_mqtt_pzem_jmetrics[] = "pub/pzem/jmetrics";
 
 //////////////////////
@@ -32,7 +33,7 @@ static constexpr const char V_SMPLCNT[] = "smplcnt";	        // Metrics graph - 
 
 // UI blocks    - B_ prefix for 'web Block'
 static constexpr const char A_ui_page_espem[] = "ui_page_espem";
-static constexpr const char A_ui_page_espem_setup[] = "ui_page_empem_setup";
+static constexpr const char A_ui_page_espem_setup[] = "ui_page_espem_setup";
 
 // direct control elements
 static constexpr const char A_DIRECT_CTL[] = "dctl_*";              // checkboxes/controls that should be processed onChange

@@ -91,20 +91,30 @@ void ui_page_espem(Interface *interf, const JsonObject *data, const char* action
 
     interf->json_section_line();
         // id, type, value, label, param
-        interf->jscall("gaugeV", C_mkchart, C_DICT[lang][CD::Voltage], chart_css);      // Voltage gauge
-        interf->jscall("gaugePF", C_mkchart, C_DICT[lang][CD::PowerF], chart_css);      // Power Factor
+        interf->jscall("gaugeV", C_mkgauge, C_DICT[lang][CD::Voltage], chart_css);      // Voltage gauge
+        interf->jscall("gaugePF", C_mkgauge, C_DICT[lang][CD::PowerF], chart_css);      // Power Factor
     interf->json_section_end();     // end of line
 
-    StaticJsonDocument<64> doc;
-    JsonObject params = doc.to<JsonObject>();               // parameters for charts
+    interf->spacer("Power chart");
 
-    params["arg1"] = embui.paramVariant(V_SMPLCNT);         // samples counter
-    interf->jscall("gsmini", C_mkchart, "Power chart", chart_css, params);          // Power chart
+    // div placeholder for TimeSeries Power chart
+    interf->jscall(C_gsmini, P_EMPTY, P_EMPTY, chart_css);
 
     // slider for the amount of metric samples to be plotted on a chart
-    interf->range(A_SMPLCNT, embui.paramVariant(V_SMPLCNT).as<int>(), 0, (int)espem->ds.getMetricsCap(), 10, C_DICT[lang][CD::MScale], true);
+    interf->range(A_SMPLCNT, embui.paramVariant(V_SMPLCNT).as<int>(), 0, (int)espem->ds.getTScap(1), 10, C_DICT[lang][CD::MScale], true);
 
     interf->json_frame_flush();     // flush frame
+
+    // call js function to build power chart
+    interf->json_frame_jscall(C_mkchart);
+        StaticJsonDocument<128> doc;
+        JsonObject params = doc.to<JsonObject>();               // parameters for charts
+        params[P_id] = C_gsmini;
+        params["scnt"] = espem->ds.getTScap(1);                 // samples counter
+        interf->jobject(params, true);
+    interf->json_frame_flush();     // flush frame
+
+
 }
 
 // Create Additional buttons on "Settings" page
@@ -142,11 +152,10 @@ void block_page_espemset(Interface *interf, const JsonObject *data, const char* 
     interf->json_frame_interface();
     interf->json_section_content();
 
-    auto tsc = espem->ds.getTSC();
     for ( unsigned i=1; i!=4; ++i ){
         char buff[64];
         char key[8];
-        std::snprintf(buff, 64, "Used: %hu/%hu, %u kib", tsc.getTSsize(i), tsc.getTScap(i), tsc.getTScap(i) * 28 / 1024);   // sizeof(pz004::metric)
+        std::snprintf(buff, 64, "Used: %hu/%hu, %u kib", espem->ds.getTSsize(i), espem->ds.getTScap(i), espem->ds.getTScap(i) * 28 / 1024);   // sizeof(pz004::metric)
         std::snprintf(key,8, "t%umem", i);
         interf->constant(std::string_view(key), std::string_view(buff));       // capacity and memory usage
     }

@@ -36,9 +36,7 @@ enum class mcstate_t{MC_DISABLE=0, MC_RUN, MC_PAUSE};
 // TaskScheduler - Let the runner object be a global, single instance shared between object files.
 extern Scheduler ts;
 
-class DataStorage {
-    // TimeSeries COntainer
-    TSContainer<pz004::metrics> tsc;
+class DataStorage : public TSContainer<pz004::metrics> {
     std::vector<uint8_t> tsids;
 
     // energy offset
@@ -69,27 +67,7 @@ public:
      */
     int32_t getEnergyOffset(){ return nrg_offset; }
 
-    const TSContainer<pz004::metrics>& getTSC(){ return tsc; }
-
-    /**
-     * @brief - get metrics storage capacity, if any
-     * 
-     */
-    int getMetricsCap() const { return tsc.getTScap(); }
-
-    int getMetricsSize() const { return tsc.getTSsize(); }
-
-    /**
-     * @brief push new data to TimeSeries storage
-     * 
-     * @param m 
-     */
-    void push(const pz004::metrics *m);
-
     void wsamples(AsyncWebServerRequest *request);
-
-    // wrappers
-    void purge(){ tsc.purge(); }
 
 };
 

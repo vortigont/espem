@@ -73,6 +73,8 @@ unknown_pkg_callback = function (obj) {
 
     // overwrite with new vals
     obj.block = vals;
+
+    if (Gsminichart == null) return;
     // Power metrics graph
     if (Gsminichart.dataProvider.length > samples_len) Gsminichart.dataProvider.shift();
     Gsminichart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": Pf } );
@@ -86,17 +88,15 @@ unknown_pkg_callback = function (obj) {
 var GVchart = null;
 var GPFchart = null;
 var Gsminichart = null;
+var minichart_tier = 1;     // chart tier level
 
-
-function mkchart(id, param){
-    var element = document.getElementById(id);
-
+function mkgauge(id, param){
+    let element = document.getElementById(id);
     if (!element){
         console.log('Element with id', id, ' not found!');
         return
     }
-    console.log('Building chart id:', id);
-
+    console.log('Building gauge id:', id);
     switch (id) {
         case "gaugeV" : GVchart = AmCharts.makeChart(element, {
             "type": "gauge",
@@ -159,7 +159,7 @@ function mkchart(id, param){
             ],
                 "allLabels": [], "balloon": {}, "titles": []
             });
-                    console.log('Created chart ', element);
+                    console.log('Created chart ', id);
             break;
 
         case "gaugePF" :
@@ -225,94 +225,110 @@ function mkchart(id, param){
                 "balloon": {},
                 "titles": []
             });
-            console.log('Created chart ', element);
+            console.log('Created chart ', id);
             break;
+            default :
+        }
+}
 
-        case "gsmini" : Gsminichart = AmCharts.makeChart(element, {
-                "type": "serial",
-                "categoryField": "t",
-                "sequencedAnimation": false,
-                "backgroundColor": "#000000",
-                "borderColor": "#111111",
-                "theme": "black",
-                "creditsPosition": "top-right",
-                "dataLoader": {
-                    "url" : "/samples.json?scntr=" + param,
-                    "showErrors": false,
-                    "load": function( options, Gsminichart ) {
-                            var pwrGraph = new AmCharts.AmGraph();
-                            pwrGraph.valueField = "P";
-                            pwrGraph.type = "step";
-                            pwrGraph.title = "Power";
-                            pwrGraph.lineColor = "#FF0000";
-                            pwrGraph.lineThickness = 2;
-                            Gsminichart.addGraph( pwrGraph );
+function mkchart(obj){
+    let id = obj.block[0].id;
+    let scnt = obj.block[0].scnt;
+    let element = document.getElementById(id);
 
-                            var pfGraph = new AmCharts.AmGraph();
-                            pfGraph.valueField = "pF";
-                            pfGraph.type = "smoothedLine";
-                            pfGraph.valueAxis = "vaPF";
-                            pfGraph.type = "step";
-                            pfGraph.title = "Power";
-                            pfGraph.lineColor = "#12DE12";
-                            pfGraph.lineThickness = 2;
-                            Gsminichart.addGraph( pfGraph );
-                    },
-                },
-                "categoryAxis": {
-                    "gridPosition": "start",
-                    "minPeriod": "ss",
-                    "parseDates": true},
-/*
-                "graphs": [
-                {
-                    "id": "gPWR",
-                    "lineColor": "#FF0000",
-                    "lineThickness": 2,
-                    "title": "Power",
-                    "type": "step",
-                    "valueAxis": "vaP",
-                    "valueField": "P"
-                },
-                {
-                    "id": "gPF",
-                    "lineColor": "#23EF23",
-                    "lineThickness": 2,
-                    "title": "Power Factor}",
-                    "type": "smoothedLine",
-                    "valueAxis": "vaPF",
-                    "valueField": "pF"
-                }
-                ],
-*/
-                "valueAxes": [
-                {
-                    "id": "vaP",
-                    "unit": "W",
-                    "position": "right",
-                    "axisColor": "#FF0000",
-                    "axisThickness": 2,
-                    "color": "#FF0000",
-                    "dashLength": 0
-                },
-                {
-                    "id": "vaPF",
-                    "maximum": 1,
-                    "minimum": 0,
-                    "position": "left",
-                    "strictMinMax": true,
-                    "color": "#23EF23"
-                }
-                ],
-                "legend": {
-                "enabled": false
-                },
-                "export": {
-                "enabled": false
-                } });
-                console.log("created gsmini"); // this will output an array
+    if (obj.block[0].tier) minichart_tier = obj.block[0].tier;
 
-        default :
+
+    if (!element){
+        console.log('Element id:', id, ' not found!');
+        return
     }
+    console.log('Building chart id:', id);
 
+    Gsminichart = AmCharts.makeChart(element,
+        {
+        "type": "serial",
+        "categoryField": "t",
+        "sequencedAnimation": false,
+        "backgroundColor": "#000000",
+        "borderColor": "#111111",
+        "theme": "black",
+        "creditsPosition": "top-right",
+        "dataLoader": {
+            "url" : "/samples.json?tsid=" + minichart_tier + "&scnt=" + scnt,
+            "showErrors": false,
+            "load": function( options, Gsminichart ) {
+                    var pwrGraph = new AmCharts.AmGraph();
+                    pwrGraph.valueField = "P";
+                    pwrGraph.type = "step";
+                    pwrGraph.title = "Power";
+                    pwrGraph.lineColor = "#FF0000";
+                    pwrGraph.lineThickness = 2;
+                    Gsminichart.addGraph( pwrGraph );
+
+                    var pfGraph = new AmCharts.AmGraph();
+                    pfGraph.valueField = "pF";
+                    pfGraph.type = "smoothedLine";
+                    pfGraph.valueAxis = "vaPF";
+                    pfGraph.type = "step";
+                    pfGraph.title = "Power";
+                    pfGraph.lineColor = "#12DE12";
+                    pfGraph.lineThickness = 2;
+                    Gsminichart.addGraph( pfGraph );
+            },
+        },
+        "categoryAxis": {
+            "gridPosition": "start",
+            "minPeriod": "ss",
+            "parseDates": true},
+/*
+        "graphs": [
+        {
+            "id": "gPWR",
+            "lineColor": "#FF0000",
+            "lineThickness": 2,
+            "title": "Power",
+            "type": "step",
+            "valueAxis": "vaP",
+            "valueField": "P"
+        },
+        {
+            "id": "gPF",
+            "lineColor": "#23EF23",
+            "lineThickness": 2,
+            "title": "Power Factor}",
+            "type": "smoothedLine",
+            "valueAxis": "vaPF",
+            "valueField": "pF"
+        }
+        ],
+*/
+        "valueAxes": [
+        {
+            "id": "vaP",
+            "unit": "W",
+            "position": "right",
+            "axisColor": "#FF0000",
+            "axisThickness": 2,
+            "color": "#FF0000",
+            "dashLength": 0
+        },
+        {
+            "id": "vaPF",
+            "maximum": 1,
+            "minimum": 0,
+            "position": "left",
+            "strictMinMax": true,
+            "color": "#23EF23"
+        }
+        ],
+        "legend": {
+        "enabled": false
+        },
+        "export": {
+        "enabled": false
+        } }
+    );
+
+    console.log("created gsmini", element);
 }

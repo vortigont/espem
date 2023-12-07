@@ -39,7 +39,7 @@ I.e. <br>
 
 ## Tiered TimeSeries data Sampling
 Controller will keep a history of previous data received from PZEM in it's memory in a tiered memory pool. It is commonly used for time series data where the longer the data age then less frequent is sampling rate of the data to keep. All data resides in volatale `memory`, so it will be lost on power cycle or reset. 
-By defaul there are 3 levels of TimeSeries in a pool
+By default there are 3 levels of TimeSeries in a pool
 
 
 
@@ -53,7 +53,7 @@ Number of samples and interval could be adjusted per each level via "Espem setup
 
 #### ESPEM TS Options
 
-<img src="/examples/ts_setup.png" alt="espem ts opts" width="50%"/>
+<img src="/examples/ts_setup.png" alt="espem ts opts" width="75%"/>
 
 
 

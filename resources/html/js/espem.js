@@ -1,29 +1,38 @@
 // override variable with ESPEM's API version
-app_jsapi = 1;
+app_jsapi = 2;
 
 const min_chart_refresh_interval = 15;
 var GVchart = null;
 var GPFchart = null;
-var Gsminichart = null;
-var minichart = {"tier": 1, "scnt": 900, "interval": 1 };
+var minichart = {
+        "chart": null,
+        "tier": 1,
+        "scnt": 900,
+        "interval": 1,
+        "timer": null,
+        "loader": function(){
+            AmCharts.loadFile("/samples.json?tsid=" + minichart.tier + "&scnt=" + minichart.scnt,
+            {async: true},
+            function(data) { minichart.chart.dataProvider = AmCharts.parseJSON(data); minichart.chart.validateData(); }
+        ); }
+    };
 
 
 // raw data coming from the EmbUI handled here
 unknown_pkg_callback = function (obj) {
     let frame = obj.block;
     if (!obj.block){
-        console.log('Message has no data block!');
+        console.log('ESPEM Message has no data block!');
         return;
     }
-    //console.log('Process raw data:', frame);
+
     let U, I, Pf, P, W, vals = [];
     for (var i = 0; i != frame.length; i++) if (typeof frame[i] == "object") {
         // обновить график с новым значением шкалы
         if (frame[i].scnt){
-            console.log('Set chart scale to:');
-            minichart.scnt = frame[i].scntr;
-            AmCharts.loadFile("/samples.json?tsid=" + minichart.tier + "&scnt=" + minichart.scnt, {async: true}, function(data) { Gsminichart.dataProvider = AmCharts.parseJSON(data); } );
-            Gsminichart.validateData();
+            console.log('Set chart scale to:', frame[i].scnt);
+            minichart.scnt = frame[i].scnt;
+            minichart.loader();
             return;
         }
 
@@ -83,12 +92,11 @@ unknown_pkg_callback = function (obj) {
     // pass data to the renderer to make it available under Menu/display area
     rdr.value(obj);
 
-    if (Gsminichart == null || minichart.interval >= min_chart_refresh_interval) return;
-    console.log('periodic:', minichart.interval);
+    if (minichart.chart == null || minichart.interval >= min_chart_refresh_interval) return;
     // Power metrics graph
-    if (Gsminichart.dataProvider.length > minichart.scnt) Gsminichart.dataProvider.shift();
-    Gsminichart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": Pf } );
-    Gsminichart.validateData();
+    if (minichart.chart.dataProvider.length > minichart.scnt) minichart.chart.dataProvider.shift();
+    minichart.chart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": Pf } );
+    minichart.chart.validateData();
 
 }
 
@@ -248,15 +256,7 @@ function mkchart(obj){
 
     console.log('Building chart id:', id);
 
-    if (Gsminichart) {
-        console.log('BDestroy:', AmCharts.charts);
-        Gsminichart.clear();
-        Gsminichart.destroy();
-        Gsminichart = null;
-        console.log('ADestroy:', AmCharts.charts);
-    }   
-
-    Gsminichart = AmCharts.makeChart(element,
+    minichart.chart = AmCharts.makeChart(element,
         {
         "type": "serial",
         "categoryField": "t",
@@ -268,15 +268,15 @@ function mkchart(obj){
         "dataLoader": {
             "url" : "/samples.json?tsid=" + minichart.tier + "&scnt=" + minichart.scnt,
             "showErrors": false,
-            "reload": (minichart.interval < min_chart_refresh_interval) ? 0 : minichart.interval,
-            "load": function( options, Gsminichart ) {
+            //"reload": (minichart.interval < min_chart_refresh_interval) ? 0 : minichart.interval,
+            "load": function( options, chart ) {
                     var pwrGraph = new AmCharts.AmGraph();
                     pwrGraph.valueField = "P";
                     pwrGraph.type = "step";
                     pwrGraph.title = "Power";
                     pwrGraph.lineColor = "#FF0000";
                     pwrGraph.lineThickness = 2;
-                    Gsminichart.addGraph( pwrGraph );
+                    chart.addGraph( pwrGraph );
 
                     var pfGraph = new AmCharts.AmGraph();
                     pfGraph.valueField = "pF";
@@ -286,7 +286,7 @@ function mkchart(obj){
                     pfGraph.title = "Power";
                     pfGraph.lineColor = "#12DE12";
                     pfGraph.lineThickness = 2;
-                    Gsminichart.addGraph( pfGraph );
+                    chart.addGraph( pfGraph );
             },
         },
         "categoryAxis": {
@@ -342,5 +342,10 @@ function mkchart(obj){
         } }
     );
 
-    console.log("created gsmini", Gsminichart);
+    if (minichart.interval >= min_chart_refresh_interval) {
+        minichart.timer = setInterval( minichart.loader, minichart.interval*1000);
+    } else 
+        clearInterval(minichart.timer);
+
+    console.log("created gsmini");
 }

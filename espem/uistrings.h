@@ -9,6 +9,10 @@ static constexpr const char C_mkchart[] = "mkchart";
 static constexpr const char C_mkgauge[] = "mkgauge";
 static constexpr const char C_gsmini[] = "gsmini";
 static constexpr const char C_mqtt_pzem_jmetrics[] = "pub/pzem/jmetrics";
+static constexpr const char C_scnt[] = "scnt";                  // samle counter
+static constexpr const char C_tier[] = "tier";
+static constexpr const char C_lchart[] = "lchart";
+
 
 //////////////////////
 // Configuration variables names  - V_ prefix for 'Variable'
@@ -34,6 +38,7 @@ static constexpr const char V_SMPLCNT[] = "smplcnt";	        // Metrics graph - 
 // UI blocks    - B_ prefix for 'web Block'
 static constexpr const char A_ui_page_espem[] = "ui_page_espem";
 static constexpr const char A_ui_page_espem_setup[] = "ui_page_espem_setup";
+static constexpr const char A_ui_page_dataexport[] = "ui_page_dataexport";
 
 // direct control elements
 static constexpr const char A_DIRECT_CTL[] = "dctl_*";              // checkboxes/controls that should be processed onChange
@@ -49,6 +54,6 @@ static constexpr const char A_EPOLLENA[] = "dctl_poll";             // Enable/di
 static constexpr const char A_EPFFIX[] = "dctl_pffix";              // PowerFactor value correction
 static constexpr const char A_UI_UPDRT[] = "dctl_updaterate";       // UI update rate
 static constexpr const char A_ECOLLECTORSTATE[] = "dctl_collector"; // Metrics collector run/pause
-static constexpr const char A_SMPLCNT[] = "dctl_smplcnt";	        // Metrics graph - number of samples to draw in a small power chart
-
+static constexpr const char A_SMPLCNT[] = "dctl_scnt";	            // Metrics graph - number of samples to draw in a small power chart
+static constexpr const char A_TS_TIER[] = "dctl_tier";              // drop-down selector for power chart TS id 
 // other constants

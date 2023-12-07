@@ -1,6 +1,6 @@
 {
   "type": "interface",
-  "version": 1,
+  "version": 2,
   "descr": "EspEM UI objects",
   "settings": {
     "cfg": {
@@ -222,7 +222,7 @@
           ]
         },
         {
-          "id": "ui_page_espem_setup",
+          "id": "ui_page_settings",
           "html": "button",
           "type": 1,
           "label": "Exit",
@@ -230,5 +230,37 @@
         }
       ]
     }
+  },
+  "export":{
+    "section": "ui_page_empem_setup",
+    "label": "ESPEM Data Export",
+    "main": true,
+    "block": [
+      {
+        "html": "comment",
+        "label": "Sampling data could be exported in json format.<br>Generic URI to get the data: <a>http://[espem]/samples.json?tsid=X&scnt=YY</a><br>Where X is TS id (1-3)<br>YY - num of samples to receive"
+      },
+      {
+        "html": "button",
+        "type": 3,
+        "label": "Download TimeSeries #1",
+        "color": "green",
+        "value": "/samples.json?tsid=1"
+      },
+      {
+        "html": "button",
+        "type": 3,
+        "label": "Download TimeSeries #2",
+        "color": "green",
+        "value": "/samples.json?tsid=2"
+      },
+      {
+        "html": "button",
+        "type": 3,
+        "label": "Download TimeSeries #3",
+        "color": "green",
+        "value": "/samples.json?tsid=3"
+      }
+    ]    
   }
 }

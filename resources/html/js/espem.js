@@ -1,8 +1,12 @@
 // override variable with ESPEM's API version
 app_jsapi = 1;
 
-// default samples chart len
-var samples_len = 600;
+const min_chart_refresh_interval = 15;
+var GVchart = null;
+var GPFchart = null;
+var Gsminichart = null;
+var minichart = {"tier": 1, "scnt": 900, "interval": 1 };
+
 
 // raw data coming from the EmbUI handled here
 unknown_pkg_callback = function (obj) {
@@ -14,6 +18,15 @@ unknown_pkg_callback = function (obj) {
     //console.log('Process raw data:', frame);
     let U, I, Pf, P, W, vals = [];
     for (var i = 0; i != frame.length; i++) if (typeof frame[i] == "object") {
+        // обновить график с новым значением шкалы
+        if (frame[i].scnt){
+            console.log('Set chart scale to:');
+            minichart.scnt = frame[i].scntr;
+            AmCharts.loadFile("/samples.json?tsid=" + minichart.tier + "&scnt=" + minichart.scnt, {async: true}, function(data) { Gsminichart.dataProvider = AmCharts.parseJSON(data); } );
+            Gsminichart.validateData();
+            return;
+        }
+
         if (frame[i].stale === true){   // we have stale data for some reason
             GVchart.axes[0].setTopText('Error');
             GPFchart.axes[0].setTopText('Error');
@@ -27,13 +40,6 @@ unknown_pkg_callback = function (obj) {
             return;
         }
 
-        // обновить график с новым значением шкалы
-        if (frame[i].scntr && Gsminichart){
-            samples_len = frame[i].scntr;
-            AmCharts.loadFile("/samples.json?scntr=" + frame[i].scntr, {async: true}, function(data) { Gsminichart.dataProvider = AmCharts.parseJSON(data); } );
-            Gsminichart.validateData();
-            return;
-        }
 
         frame[i].U /= 10
         frame[i].I /= 1000 // normalize to Amps
@@ -74,21 +80,18 @@ unknown_pkg_callback = function (obj) {
     // overwrite with new vals
     obj.block = vals;
 
-    if (Gsminichart == null) return;
+    // pass data to the renderer to make it available under Menu/display area
+    rdr.value(obj);
+
+    if (Gsminichart == null || minichart.interval >= min_chart_refresh_interval) return;
+    console.log('periodic:', minichart.interval);
     // Power metrics graph
-    if (Gsminichart.dataProvider.length > samples_len) Gsminichart.dataProvider.shift();
+    if (Gsminichart.dataProvider.length > minichart.scnt) Gsminichart.dataProvider.shift();
     Gsminichart.dataProvider.push( { "t": Math.floor(Date.now()), "U": U, "I": I, "P": P, "W": W, "pF": Pf } );
     Gsminichart.validateData();
 
-    // pass data to the renderer to make it available under Menu/display area
-    rdr.value(obj);
 }
 
-
-var GVchart = null;
-var GPFchart = null;
-var Gsminichart = null;
-var minichart_tier = 1;     // chart tier level
 
 function mkgauge(id, param){
     let element = document.getElementById(id);
@@ -233,17 +236,25 @@ function mkgauge(id, param){
 
 function mkchart(obj){
     let id = obj.block[0].id;
-    let scnt = obj.block[0].scnt;
+    minichart.tier = obj.block[0].tier;
+    minichart.scnt = obj.block[0].scnt;
+    minichart.interval = obj.block[0].interval;
     let element = document.getElementById(id);
-
-    if (obj.block[0].tier) minichart_tier = obj.block[0].tier;
-
 
     if (!element){
         console.log('Element id:', id, ' not found!');
         return
     }
+
     console.log('Building chart id:', id);
+
+    if (Gsminichart) {
+        console.log('BDestroy:', AmCharts.charts);
+        Gsminichart.clear();
+        Gsminichart.destroy();
+        Gsminichart = null;
+        console.log('ADestroy:', AmCharts.charts);
+    }   
 
     Gsminichart = AmCharts.makeChart(element,
         {
@@ -255,8 +266,9 @@ function mkchart(obj){
         "theme": "black",
         "creditsPosition": "top-right",
         "dataLoader": {
-            "url" : "/samples.json?tsid=" + minichart_tier + "&scnt=" + scnt,
+            "url" : "/samples.json?tsid=" + minichart.tier + "&scnt=" + minichart.scnt,
             "showErrors": false,
+            "reload": (minichart.interval < min_chart_refresh_interval) ? 0 : minichart.interval,
             "load": function( options, Gsminichart ) {
                     var pwrGraph = new AmCharts.AmGraph();
                     pwrGraph.valueField = "P";
@@ -330,5 +342,5 @@ function mkchart(obj){
         } }
     );
 
-    console.log("created gsmini", element);
+    console.log("created gsmini", Gsminichart);
 }

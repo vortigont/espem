@@ -171,8 +171,8 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
 
   size_t cnt = 0;           // cnt - return last 'cnt' samples, 0 - all samples
 
-  if (request->hasParam("scntr")){
-    AsyncWebParameter* p = request->getParam("scntr");
+  if (request->hasParam(C_scnt)){
+    AsyncWebParameter* p = request->getParam(C_scnt);
     if (!p->value().isEmpty())
       cnt = p->value().toInt();
   }

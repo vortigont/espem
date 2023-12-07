@@ -12,6 +12,9 @@ extern Espem *espem;
 
 static const char* chart_css = "graphwide";
 
+// variable that holds TS id which is currently displayed at Web UI
+unsigned power_chart_id{1};
+
 // forward declarations
 void ui_page_espem(Interface *interf, const JsonObject *data, const char* action);
 
@@ -54,7 +57,8 @@ void block_menu(Interface *interf){
     // создаем меню
     interf->json_section_menu();    // открываем секцию "меню"
     interf->option(A_ui_page_espem,   C_DICT[lang][CD::ESPEM_DB]);          // пункт меню "ESPEM Info"
-    interf->option(A_ui_page_espem_setup, C_DICT[lang][CD::ESPEMSet]);         // пункт меню "ESPEM Setup"
+    interf->option(A_ui_page_espem_setup, C_DICT[lang][CD::ESPEMSet]);      // пункт меню "ESPEM Setup"
+    interf->option(A_ui_page_dataexport, "ESPEM DataExport");               // пункт меню "ESPEM Data Export"
 
     /**
      * добавляем в меню пункт - настройки,
@@ -63,6 +67,43 @@ void block_menu(Interface *interf){
     interf->json_section_end();
 }
 
+
+/**
+ * @brief create and send jscall frame thet will trigger building power-chart on WebUI
+ * 
+ * @param interf 
+ */
+void ui_frame_mkchart(Interface *interf){
+    interf->json_frame_jscall(C_mkchart);
+        StaticJsonDocument<128> doc;
+        JsonObject params = doc.to<JsonObject>();               // parameters for charts
+        params[P_id] = C_gsmini;
+        params[C_tier] = power_chart_id;
+        params["interval"] = espem->ds.getTS(power_chart_id)->getInterval();
+        params[C_scnt] = embui.paramVariant(V_SMPLCNT).as<int>();   // espem->ds.getTScap(power_chart_id);    // samples counter
+        interf->jobject(params, true);
+    interf->json_frame_flush();     // flush frame
+}
+
+/**
+ * @brief create/replace UI section with power chart controls
+ * 
+ * @param interf 
+ */
+void ui_block_chart_ctrls(Interface *interf){
+    interf->json_section_line(C_lchart);            // chart Live controls
+        interf->select(A_TS_TIER, power_chart_id, "TimeSeries Interval", true);
+            for (unsigned i = 0; i != espem->ds.getTScnt(); ++i){
+                String lbl(espem->ds.getTS(i+1)->getInterval());
+                lbl += " sec.";
+                interf->option(i+1, lbl);           // ids are starting from 1
+            }
+        interf->json_section_end();                 // end select drop-down
+
+        // slider for the amount of metric samples to be plotted on a chart
+        interf->range(A_SMPLCNT, embui.paramVariant(V_SMPLCNT).as<int>(), 0, (int)espem->ds.getTScap(power_chart_id), 10, C_DICT[lang][CD::MScale], true);
+    interf->json_section_end();     // end of line
+}
 
 /**
  * This code builds UI section with dashboard
@@ -90,31 +131,21 @@ void ui_page_espem(Interface *interf, const JsonObject *data, const char* action
 
 
     interf->json_section_line();
-        // id, type, value, label, param
+        //                  id,  value,     label,                      param
         interf->jscall("gaugeV", C_mkgauge, C_DICT[lang][CD::Voltage], chart_css);      // Voltage gauge
         interf->jscall("gaugePF", C_mkgauge, C_DICT[lang][CD::PowerF], chart_css);      // Power Factor
     interf->json_section_end();     // end of line
 
     interf->spacer("Power chart");
+    ui_block_chart_ctrls(interf);
 
-    // div placeholder for TimeSeries Power chart
+    // empty div placeholder for TimeSeries Power chart
     interf->jscall(C_gsmini, P_EMPTY, P_EMPTY, chart_css);
-
-    // slider for the amount of metric samples to be plotted on a chart
-    interf->range(A_SMPLCNT, embui.paramVariant(V_SMPLCNT).as<int>(), 0, (int)espem->ds.getTScap(1), 10, C_DICT[lang][CD::MScale], true);
 
     interf->json_frame_flush();     // flush frame
 
     // call js function to build power chart
-    interf->json_frame_jscall(C_mkchart);
-        StaticJsonDocument<128> doc;
-        JsonObject params = doc.to<JsonObject>();               // parameters for charts
-        params[P_id] = C_gsmini;
-        params["scnt"] = espem->ds.getTScap(1);                 // samples counter
-        interf->jobject(params, true);
-    interf->json_frame_flush();     // flush frame
-
-
+    ui_frame_mkchart(interf);
 }
 
 // Create Additional buttons on "Settings" page
@@ -214,6 +245,16 @@ void block_page_espemset(Interface *interf, const JsonObject *data, const char* 
 */
 }
 
+/**
+ * ESPEM data export page
+ * 
+ */
+void ui_page_dataexport(Interface *interf, const JsonObject *data, const char* action){
+    interf->json_frame_interface();
+        interf->json_section_uidata();
+        interf->uidata_pick("espem.ui.export");
+    interf->json_frame_flush();
+}
 
 // Callback ACTIONS
 
@@ -248,14 +289,14 @@ void set_directctrls(Interface *interf, const JsonObject *data, const char* acti
 
     // ena/disable polling
     if (sv.compare(V_EPOLLENA) == 0){
-        espem->set_uirate( (*data)[A_EPOLLENA] ? embui.paramVariant(V_UI_UPDRT) : 0);
+        espem->set_uirate( (*data)[action] ? embui.paramVariant(V_UI_UPDRT) : 0);
         LOG(printf_P, PSTR("ESPEM: UI refresh state: %d\n"), (*data)[A_EPOLLENA].as<int>() );
         return;
     }
 
     // UI update rate
     if (sv.compare(V_UI_UPDRT) == 0){
-        espem->set_uirate((*data)[A_UI_UPDRT]);
+        espem->set_uirate((*data)[action]);
         embui.var(V_UI_UPDRT, espem->get_uirate());
         LOG( printf_P, PSTR("ESPEM: Set UI update rate to: %d\n"), espem->get_uirate() );
         return;
@@ -263,7 +304,7 @@ void set_directctrls(Interface *interf, const JsonObject *data, const char* acti
 
     // Metrics collector run/pause
     if (sv.compare(V_ECOLLECTORSTATE) == 0){
-        uint8_t new_state = (*data)[A_ECOLLECTORSTATE];
+        uint8_t new_state = (*data)[action];
         // reset TS Container if empty and we need to start it
         //if (espem->get_collector_state() == mcstate_t::MC_DISABLE && new_state >0)
         //    espem->ds.tsSet(embui.paramVariant(V_EPOOLSIZE), embui.paramVariant(V_SMPL_PERIOD));
@@ -274,14 +315,30 @@ void set_directctrls(Interface *interf, const JsonObject *data, const char* acti
     }
 
     // Metrics graph - number of samples to draw in a small power chart
-    if (sv.compare(V_SMPLCNT) == 0){
-        embui.var(V_SMPLCNT, (*data)[A_SMPLCNT]);
+    if (sv.compare(C_scnt) == 0){
+        embui.var(V_SMPLCNT, (*data)[action]);
         // send update command to AmCharts block
         if (interf){
-            interf->json_frame("rawdata");
-            interf->value("scntr", (*data)[A_SMPLCNT]);
+            interf->json_frame("espem");
+            interf->value(C_scnt, (*data)[action]);
             interf->json_frame_flush();
         }
+        return;
+    }
+
+    if (sv.compare(C_tier) == 0){
+        // save new TS id
+        power_chart_id = (*data)[action];
+        if (!interf) return;
+
+        // call js function to build power chart
+        ui_frame_mkchart(interf);
+
+        // send update command to AmCharts block
+        interf->json_frame_interface();
+            ui_block_chart_ctrls(interf);
+        interf->json_frame_flush();
+        return;
     }
 }
 
@@ -366,9 +423,9 @@ void embui_actions_register(){
     //embui.action.set_publish_cb(pubCallback);                // Publish callback
 
     // вывод WebUI секций
-    embui.action.add(A_ui_page_espem, ui_page_espem);                // generate "main" info page
-    embui.action.add(A_ui_page_espem_setup, block_page_espemset);       // generate "ESPEM settings" page
-
+    embui.action.add(A_ui_page_espem, ui_page_espem);               // generate "main" info page
+    embui.action.add(A_ui_page_espem_setup, block_page_espemset);   // generate "ESPEM settings" page
+    embui.action.add(A_ui_page_dataexport, ui_page_dataexport);     // generate "Data export" page
 
     // активности
     embui.action.add(A_SET_MCOLLECTOR,  set_sampler_opts);   // set options for TimeSeries collector

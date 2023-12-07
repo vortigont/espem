@@ -1,0 +1,266 @@
+{
+  "type": "interface",
+  "version": 2,
+  "descr": "EspEM UI objects",
+  "settings": {
+    "cfg": {
+      "section": "ui_page_empem_setup",
+      "label": "ESPEM Setup",
+      "main": true,
+      "block": [
+        {
+          "section": "set_uart",
+          "label": "UART GPIO Setup",
+          "hidden": true,
+          "block": [
+            {
+              "section": "uart_gpio",
+              "line": true,
+              "block": [
+                {
+                  "id": "uart",
+                  "html": "input",
+                  "value": 1,
+                  "type": "number",
+                  "label": "Uart port",
+                  "max": 3,
+                  "step": 1
+                },
+                {
+                  "id": "rx",
+                  "html": "input",
+                  "value": -1,
+                  "type": "number",
+                  "label": "RX pin (-1 to disable)",
+                  "min": -1,
+                  "max": 46,
+                  "step": 1
+                },
+                {
+                  "id": "tx",
+                  "html": "input",
+                  "value": -1,
+                  "type": "number",
+                  "label": "TX pin (-1 to disable)",
+                  "min": -1,
+                  "max": 46,
+                  "step": 1
+                }
+              ]
+            },
+            {
+              "id": "set_uart",
+              "html": "button",
+              "type": 1,
+              "label": "Apply"
+            }
+          ]
+        },
+        {
+          "section": "set_nrgoffset",
+          "label": "PZEM Options",
+          "hidden": true,
+          "block": [
+            {
+              "html": "spacer",
+              "label": "Energy counter options"
+            },
+            {
+              "id": "eoffset",
+              "html": "input",
+              "value": 0,
+              "type": "number",
+              "label": "Energy counter offset (Wh)"
+            },
+            {
+              "id": "set_nrgoffset",
+              "html": "button",
+              "type": 1,
+              "label": "Apply"
+            }
+          ]
+        },
+        {
+          "section": "set_mcollector",
+          "label": "Time Series Collector",
+          "hidden": true,
+          "block": [
+            {
+              "html": "spacer",
+              "label": "Pool capacity setup"
+            },
+            {
+              "id": "dctl_collector",
+              "html": "select",
+              "label": "Metrics collector state",
+              "onChange": true,
+              "section": "options",
+              "block": [
+                { "value": 0, "label": "Disabled" },
+                { "value": 1, "label": "Running" },
+                { "value": 2, "label": "Paused" }
+              ]
+            },
+            {
+              "section": "t1cmt",
+              "line": true,
+              "block": [
+                {
+                  "html": "comment",
+                  "label": "Tier 1 series"
+                },
+                {
+                  "id": "t1mem",
+                  "html": "const",
+                  "label": "Memory: -/-"
+                }
+              ]
+            },
+            {
+              "section": "t1opts",
+              "line": true,
+              "block": [
+                {
+                  "id": "t1cnt",
+                  "html": "input",
+                  "type": "number",
+                  "label": "Num of samples",
+                  "min": 100,
+                  "step": 100
+                },
+                {
+                  "id": "t1int",
+                  "html": "input",
+                  "value": 1,
+                  "type": "number",
+                  "label": "interval (sec.)",
+                  "min": 1,
+                  "step": 1
+                }
+              ]
+            },
+            {
+              "section": "t2cmt",
+              "line": true,
+              "block": [
+                {
+                  "html": "comment",
+                  "label": "Tier 2 series"
+                },
+                {
+                  "id": "t2mem",
+                  "html": "const",
+                  "label": "Memory: -/-"
+                }
+              ]
+            },
+            {
+              "section": "t2opts",
+              "line": true,
+              "block": [
+                {
+                  "id": "t2cnt",
+                  "html": "input",
+                  "type": "number",
+                  "label": "Num of samples",
+                  "min": 100,
+                  "step": 100
+                },
+                {
+                  "id": "t2int",
+                  "html": "input",
+                  "type": "number",
+                  "label": "interval (sec.)",
+                  "min": 5,
+                  "step": 5
+                }
+              ]
+            },
+            {
+              "section": "t3cmt",
+              "line": true,
+              "block": [
+                {
+                  "html": "comment",
+                  "label": "Tier 3 series"
+                },
+                {
+                  "id": "t3mem",
+                  "html": "const",
+                  "label": "Memory: -/-"
+                }
+              ]
+            },
+            {
+              "section": "t3opts",
+              "line": true,
+              "block": [
+                {
+                  "id": "t3cnt",
+                  "html": "input",
+                  "type": "number",
+                  "label": "Num of samples",
+                  "min": 100,
+                  "step": 100
+                },
+                {
+                  "id": "t3int",
+                  "html": "input",
+                  "type": "number",
+                  "label": "interval (sec.)",
+                  "min": 60,
+                  "step": 60
+                }
+              ]
+            },
+            {
+              "id": "set_mcollector",
+              "html": "button",
+              "type": 1,
+              "label": "Apply"
+            }
+          ]
+        },
+        {
+          "id": "ui_page_settings",
+          "html": "button",
+          "type": 1,
+          "label": "Exit",
+          "color": "gray"
+        }
+      ]
+    }
+  },
+  "export":{
+    "section": "ui_page_empem_setup",
+    "label": "ESPEM Data Export",
+    "main": true,
+    "block": [
+      {
+        "html": "comment",
+        "label": "Sampling data could be exported in json format.<br>Generic URI to get the data: <a>http://[espem]/samples.json?tsid=X&scnt=YY</a><br>Where X is TS id (1-3)<br>YY - num of samples to receive"
+      },
+      {
+        "html": "button",
+        "type": 3,
+        "label": "Download TimeSeries #1",
+        "color": "green",
+        "value": "/samples.json?tsid=1"
+      },
+      {
+        "html": "button",
+        "type": 3,
+        "label": "Download TimeSeries #2",
+        "color": "green",
+        "value": "/samples.json?tsid=2"
+      },
+      {
+        "html": "button",
+        "type": 3,
+        "label": "Download TimeSeries #3",
+        "color": "green",
+        "value": "/samples.json?tsid=3"
+      }
+    ]    
+  }
+}

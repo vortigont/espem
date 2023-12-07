@@ -4,7 +4,7 @@ USAGE="Usage: `basename $0` [-h] [-t embuitag] [-f]"
 
 # embui branch/tag name to fetch
 embuirepo='https://github.com/vortigont/EmbUI'
-embuitag="v2.8.1"
+embuitag="v3.1"
 
 #####
 # no changes below this point!
@@ -155,6 +155,7 @@ mv -f newetags.txt $tags
 
 ## update local js/css if newer
 updlocalgz 'js/espem.js'
+updlocalgz 'js/espem.ui.json'
 updlocalgz 'css/espem.css'
 updlocalgz 'manifest.json'
 

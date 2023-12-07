@@ -19,6 +19,9 @@
 		<a href="#menu" id="menuLink" class="menu-link">
 			<span></span>
 		</a>
+		<div id="update_alert" style="display:none;">Web-ресурсы на файловой системе требуют обновления. Пожалуйста, обновите файлы из репозитория проекта
+			<br>Web-resouce files on filesystem are outdated. Please, update FS content from project's repository
+		</div>
 		<div id="menu"></div>
 		<div id="main"></div>
 		<div id="content"></div>
@@ -48,6 +51,7 @@
 			<div><span class="menu-title">Time:</span><span id="pTime" class="menu-value">{{value.pTime}}</span></div>
 			<div><span class="menu-title">Memory:</span><span id="pMem" class="menu-value">{{value.pMem}}</span></div>
 			<div><span class="menu-title">Uptime:</span><span id="pUptime" class="menu-value">{{value.pUptime}}</span></div>
+			<div><span class="menu-title">RSSI &#128246;:</span><span id="pRSSI" class="menu-value">{{value.pRSSI}}</span></div>
 			<div><span class="menu-title">ChipID:</span><span class="menu-value">{{macid}}</span></div>
 			<div><span class="menu-title">EmbUI ver:</span><span class="menu-value">{{uiver}}</span></div>
 			<div><span class="menu-title">FirmWare ver:</span><span id="fwver" class="menu-value">{{appver}}</span></div>
@@ -100,26 +104,26 @@
 		{{/if}}
 		{{#if type == "checkbox"}}
 		    <div class="switch-block">
-			<input type="checkbox" id="{{id}}" name="{{id}}" class="checkbox" {{#if2 value == true || value == 1 || value == "true" || value == "1"}}checked{{/if2}} {{#if2 directly}}{{onevent "click", "on_change", id}}{{/if2}}>
+			<input type="checkbox" id="{{id}}" name="{{id}}" class="checkbox" {{#if2 value == true || value == 1 || value == "true" || value == "1"}}checked{{/if2}} {{#if2 onChange}}{{onevent "click", "on_change", id}}{{/if2}}>
 			<label class="switch" for="{{id}}"><span class="checkbox-label">{{label}}</span></label></input>
 		    </div>
 		{{/if}}
 		{{#if html == "const"}}
-			<div class="pure-u-1 pure-button mr">{{label}}</div>
-			{{#if2 value}}<input type="hidden" id="{{id}}" name="{{id}}" value="{{value}}">{{/if2}}
+			<div id="{{id}}" class="pure-u-1 pure-button mr">{{label}}{{#if2 value}}<input type="hidden" name="{{id}}" value="{{value}}">{{/if2}}</div>
 		{{/if}}
 		{{#if html == "comment"}}
 			<div id="{{id}}" class="comment">{{label}}</div>
 		{{/if}}
 		{{#if html == "div" && type == "js"}}
 			<!-- Custom div element, on create 'div' calls user js-function with a name passed in {{value}} parameter
-				params: id - becomes div ID and name
+				id - becomes div ID and name
 				class - becomes css class selector
 				value - becomes js-function name to call
 				label - becomes span "comment" element
+				params - becomes function argument
 			-->
-			{{#if2 label}}<span class="comment">{{label}}</span>{{/if2}}
-			<div id="{{id}}" name="{{id}}" {{#if2 class}}class="{{class}}"{{/if2}}><img src onerror='{{value}}("{{id}}","{{params.arg1}}")'></div>
+			{{#if2 label}}<span id="{{id}}-lbl" class="comment">{{label}}</span>{{/if2}}
+			<div id="{{id}}" {{#if2 class}}class="{{class}}"{{/if2}}><img src onerror='{{value}}("{{id}}","{{params.arg1}}")'></div>
 		{{/if}}
 		{{#if html == "div" && type == "html"}}
 			<!-- Custom div with text content,
@@ -128,8 +132,8 @@
 				label - becomes div css class selector
 				param.* - reserved
 			-->
-			{{#if2 label}}<span class="comment">{{label}}</span>{{/if2}}
-			<div {{#if2 class}}class="{{class}}"{{/if2}}><div id="{{id}}">{{value}}</div></div>
+           {{#if2 label}}<span id="{{id}}-lbl" class="comment">{{label}}</span>{{/if2}}
+           <div id="{{id}}-out" {{#if2 class}}class="{{class}}"{{/if2}}><div id="{{id}}">{{value}}</div></div>
 		{{/if}}
 		{{#if html == "div" && type == "pbar"}}
 			<!-- live progressbar -->
@@ -153,23 +157,23 @@
 			<div class="frame"><iframe id="{{id}}" name="{{id}}" src="{{value}}" class="iframe">iframe does not supported</iframe></div>
 		{{/if}}
 		{{#if html == "input" && type != "checkbox"}}
-			<span>{{label}}</span>
+			<span id="{{id}}-lbl">{{label}}</span>
 			{{#if2 type == "range" || type == "color"}}<span id="{{id}}-val">: {{value}}</span>{{/if2}}
-			{{#if2 type == "text" || type == "password"}}<span id="{{id}}-val"> ({{calc value.length || 0}})</span>{{/if2}}
+			{{#if2 type == "text"  || type == "password"}}<span id="{{id}}-val"> ({{calc value.length || 0}})</span>{{/if2}}
 			<input type="{{type}}" id="{{id}}" name="{{id}}" class="pure-u-1 mr" value="{{value}}"
 				{{#if2 (min || min === 0)}}min="{{min}}"{{/if2}}
 				{{#if2 (max || max === 0)}}max="{{max}}"{{/if2}}
 				{{#if2 (step || step === 0)}}step="{{step}}"{{/if2}}
 				{{#if2 placeholder}}placeholder="{{placeholder}}"{{/if2}}
 				{{#if2 type == "color"}}style="height: 50px"{{/if2}}
-				{{#if2 directly}}{{onevent "change", "on_change", id}}{{/if2}}
+				{{#if2 onChange}}{{onevent "change", "on_change", id}}{{/if2}}
 				{{onevent "input", "on_input", id}}
 			>
 		{{/if}}
 		{{#if html == "select"}}
 			<span>{{label}}</span>
 			<select id="{{id}}" name="{{id}}" value="{{value}}" class="pure-u-1"
-				{{#if2 directly}}{{onevent "change", "on_change", id}}{{/if2}}
+				{{#if2 onChange}}{{onevent "change", "on_change", id}}{{/if2}}
 			>
 			{{#block}}
 				<option value="{{value}}" {{#if2 value == _this.value}}selected{{/if2}}>{{label}}</option>
@@ -180,14 +184,13 @@
 			<h2 class="spacer">{{label}}</h2>
 		{{/if}}
 		{{#if html == "textarea"}}
-			<textarea class="pure-u-1" maxlength="255" id="{{id}}" name="{{id}}"
-				{{#if2 directly}}{{onevent "change", "on_change", id}}{{/if2}}
-			></textarea>
+			<textarea class="pure-u-1" maxlength="255" id="{{id}}" name="{{id}}"></textarea>
 		{{/if}}
 
 		</div>
 	</script>
 
+	<script src="js/lodash.custom.js"></script>
 	<script src="js/embui.js"></script>
 <!--
 	<script src="js/lib.js"></script>

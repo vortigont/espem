@@ -11,6 +11,7 @@
 #include "espem.h"
 
 #include <EmbUI.h>
+#include "interface.h"
 
 extern "C" int clock_gettime(clockid_t unused, struct timespec *tp);
 
@@ -20,7 +21,7 @@ extern "C" int clock_gettime(clockid_t unused, struct timespec *tp);
 static const char PGverjson[] = "{\"ChipID\":\"%s\",\"Flash\":%u,\"SDK\":\"%s\",\"firmware\":\"" FW_NAME "\",\"version\":\"" FW_VERSION_STRING "\",\"git\":\"%s\",\"CPUMHz\":%u,\"RAM Heap size\":%u,\"RAM Heap free\":%u,\"PSRAM size\":%u,\"PSRAM free\":%u,\"Uptime\":%u}";
 
 // Our instance of espem
-ESPEM *espem = nullptr;
+Espem *espem = nullptr;
 
 // ----
 // MAIN Setup
@@ -34,23 +35,28 @@ void setup() {
 
   // Start framework, load config and connect WiFi
   embui.begin();
+  embui_actions_register();
 
   // create and run ESPEM object
-  espem = new ESPEM();
+  espem = new Espem();
 
-  if (espem && espem->begin(embui.paramVariant(FPSTR(V_UART)), embui.paramVariant(FPSTR(V_RX)), embui.paramVariant(FPSTR(V_TX))) ){
-    if ( espem->tsSet( embui.paramVariant(FPSTR(V_EPOOLSIZE)), embui.paramVariant(FPSTR(V_SMPL_PERIOD)) ) ){
+  if (espem && espem->begin(  embui.paramVariant(V_UART),
+                              embui.paramVariant(V_RX),
+                              embui.paramVariant(V_TX)) 
+                            )
+  {
+    espem->ds.setEnergyOffset(embui.paramVariant(V_EOFFSET));
+
+    // postpone TimeSeries setup until NTP aquires valid time
+    TimeProcessor::getInstance().attach_callback([](){
       espem->set_collector_state(mcstate_t::MC_RUN);
-    }
-    espem->setEnergyOffset(embui.paramVariant(FPSTR(V_EOFFSET)));
+      // we only need that setup once
+      TimeProcessor::getInstance().dettach_callback();
+    });
+
   }
 
-  embui.server.on(PSTR("/fw"), HTTP_GET, [](AsyncWebServerRequest *request){
-    wver(request);
-  });
-
-
-  //sync_parameters();    // sync UI params
+  embui.server.on("/fw", HTTP_GET, [](AsyncWebServerRequest *request){ wver(request); });
 
   embui.setPubInterval(WEBUI_PUBLISH_INTERVAL);
 }

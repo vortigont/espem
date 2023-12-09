@@ -93,8 +93,6 @@ ESPEM Ver 3 switched to it's own library [pzem-edl](https://github.com/vortigont
 | ESP32                | YES                                                       | YES               |
 | PZEM004v30           | YES                                                       | YES               |
 | old PZEMv30          | YES                                                       | NO       |
-| PZEM017 (DC version) | NO                                                        | NO (planned)      |
-| 3 phase option       | NO                                                        | YES (in progress) |
 | Time Series Charts   | YES (Basic)                                               | YES (extendable)  |
 | TS in PSRAM          | NO                                                        | YES               |
 

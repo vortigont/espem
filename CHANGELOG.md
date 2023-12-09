@@ -1,8 +1,14 @@
 # Change Log
 
+## v3.2.0 (2023-12-09)
+* Update readme
++ implement Tiered TimeSeries data sampling
++ MQTT publishing PZEM metrics data
+* bump EmbUI version up to v3.1 (API change, need to update resourses)
++ Add FS image data folder
+- remove FTP server lib
 + espem could be build with DummyPZEM emulator for prototyping
 + periodic publishing sends raw integer values to webui, js does the formatting for webui
-* bump EmbUI version up to v2.7.0 (API change, need to update resourses)
 + add frequency value to the left menu
 + make gpio and port num limits in WebUI platform dependent
 

@@ -46,13 +46,19 @@ platformio run -e espem_debug -t upload
 
 ### Uploading LittleFS image file with web resources
 Firmware needs an FS with web resources to be uploaded to controller before first use.
-This could be done with a simple
+Files to build an FS image from are located under `/data` folder.
+Upload FS image with command
 ```sh
 platformio run -t uploadfs
 ```
 
-### Making a LittleFS image file with web resources (optional)
-To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/vortigont/EmbUI) framework and js/css files for the ESPEM project. There is a shell script that downloads required files from github, repacks it and places under `/data` directory. That directory is used to create and upload LittleFS image to the controller. Run
+That's it. Controller should reboot and enable WiFi. Look for the open Access point names like EmbUI-xxxx, connect to it and open WebUI http://192.168.4.1/, proceed with settings via WebUI. Check [USAGE](USAGE.md) page for more details.
+
+
+<details>
+ <summary>Making a LittleFS image file with web resources (optional)</summary>
+
+ To handle WebUI it is required to build a LittleFS image and upload it to the controller. The image contains files from the [EmbUI](https://github.com/vortigont/EmbUI) framework and js/css files for the ESPEM project. There is a shell script that downloads required files from github, repacks it and places under `/data` directory. That directory is used to create and upload LittleFS image to the controller. Run
 ```sh
 cd resources
 ./respack.sh
@@ -61,9 +67,8 @@ It should populate `/data` dir with `js`, `css`, `index.html.gz`, etc...
 
 If you are "Windows" user, just install [Git for Windows](https://gitforwindows.org/), it will provide you with a [Git-bash](https://appuals.com/what-is-git-bash/), run `bash ./respack.sh` via it's console.
 Or better learn what is [WSL](https://learn.microsoft.com/en-us/windows/wsl/about), how to [install](https://www.windowscentral.com/how-install-wsl2-windows-10) it and run.
+</details>
 
-
-That's it. Controller should reboot and enable WiFi. Look for the open Access point names like EmbUI-xxxx, connect to it and open WebUI http://192.168.4.1/, proceed with settings via WebUI. Check [USAGE](USAGE.md) page for more details.
 
 
 ### Compressed OTA updates

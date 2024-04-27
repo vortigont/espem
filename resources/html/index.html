@@ -98,7 +98,7 @@
 		<button id="{{id}}" {{#if2 color}}style="background-color: {{color}}"{{/if2}} class="pure-u-1 pure-button pure-button-primary mr"
 			{{#if2 type == 0}}{{onevent "click", "on_change", id, value}}{{/if2}}
 			{{#if2 type == 1}}{{onevent "click", "on_submit", id, value}}{{/if2}}
-			{{#if2 type == 2}}{{onevent "click", "on_js", id, value}}{{/if2}}
+			{{#if2 type == 2}}{{onevent "click", "on_js", function}}{{/if2}}
 			{{#if2 type == 3}} onclick="location.href='{{value}}'" type="button"{{/if2}}
 			>{{label}}</button>
 		{{/if}}
@@ -116,11 +116,10 @@
 		{{/if}}
 		{{#if html == "div" && type == "js"}}
 			<!-- Custom div element, on create 'div' calls user js-function with a name passed in {{value}} parameter
-				id - becomes div ID and name
+				params: id - becomes div ID and name
 				class - becomes css class selector
 				value - becomes js-function name to call
 				label - becomes span "comment" element
-				params - becomes function argument
 			-->
 			{{#if2 label}}<span id="{{id}}-lbl" class="comment">{{label}}</span>{{/if2}}
 			<div id="{{id}}" {{#if2 class}}class="{{class}}"{{/if2}}><img src onerror='{{value}}("{{id}}","{{params.arg1}}")'></div>
@@ -157,10 +156,10 @@
 			<div class="frame"><iframe id="{{id}}" name="{{id}}" src="{{value}}" class="iframe">iframe does not supported</iframe></div>
 		{{/if}}
 		{{#if html == "input" && type != "checkbox"}}
-			<span id="{{id}}-lbl">{{label}}</span>
+			<span>{{label}}</span>
 			{{#if2 type == "range" || type == "color"}}<span id="{{id}}-val">: {{value}}</span>{{/if2}}
-			{{#if2 type == "text"  || type == "password"}}<span id="{{id}}-val"> ({{calc value.length || 0}})</span>{{/if2}}
-			<input type="{{type}}" id="{{id}}" name="{{id}}" class="pure-u-1 mr" value="{{value}}"
+			{{#if2 type == "text" || type == "password"}}<span id="{{id}}-val"> ({{calc value.length || 0}})</span>{{/if2}}
+			<input type="{{type}}" id="{{id}}" name="{{id}}" class="pure-u-1" value="{{value}}"
 				{{#if2 (min || min === 0)}}min="{{min}}"{{/if2}}
 				{{#if2 (max || max === 0)}}max="{{max}}"{{/if2}}
 				{{#if2 (step || step === 0)}}step="{{step}}"{{/if2}}

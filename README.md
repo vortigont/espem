@@ -18,6 +18,15 @@ for [Peacefair](https://peacefair.aliexpress.com/store/1773456/) PZEM-004Tv30 Po
 
 <img src="/examples/espemembui.png" alt="espem ui" width="50%"/>
 
+## ESPEM on Mobile phone
+
+|  <img src="/examples/mobile02_res.webp" alt="espem mobile ui" width="30%"/> | <img src="/examples/mobile03_res.webp" alt="espem mobile ui" width="30%"/>  |  <img src="/examples/mobile04_res.webp" alt="espem mobile ui" width="30%"/> | <img src="/examples/mobile05_res.webp" alt="espem mobile ui" width="30%"/> |
+
+
+To find EspEM in your WiFi network you can use [mDNS Discovey](https://play.google.com/store/apps/details?id=com.mdns_discovery.app&hl=ja&gl=US) app for Android or any other that can work with mDNS or `Bonjour` for iPhone.
+Just find `http` enabled service in the app and open with a browser.
+
+
 ## MQTT
 MQTT server publishing and connection could be configured via "Settings" - "MQTT". 
 It will publish pzem metrics to topic `~/pub/pzem/jmetrics` on each update cycle. Where `~` is topic prefix, default is `EmbUI/[DeviceID]/`.

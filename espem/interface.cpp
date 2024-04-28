@@ -79,7 +79,10 @@ void ui_frame_mkchart(Interface *interf){
         JsonObject params = doc.to<JsonObject>();               // parameters for charts
         params[P_id] = C_gsmini;
         params[C_tier] = power_chart_id;
-        params["interval"] = espem->ds.getTS(power_chart_id)->getInterval();
+        auto ts = espem->ds.getTS(power_chart_id);
+        // check if requested TimeSeries exist
+        if (ts)
+            params["interval"] = ts->getInterval();
         params[C_scnt] = embui.paramVariant(V_SMPLCNT).as<int>();   // espem->ds.getTScap(power_chart_id);    // samples counter
         interf->jobject(params, true);
     interf->json_frame_flush();     // flush frame

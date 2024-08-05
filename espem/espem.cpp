@@ -156,13 +156,13 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
   uint8_t id = 1;           // default ts id
 
   if (request->hasParam("tsid")) {
-    AsyncWebParameter* p = request->getParam("tsid");
+    const AsyncWebParameter* p = request->getParam("tsid");
     id = p->value().toInt();
   }
 
   // check if there is any sampled data
   if ( !getTSsize(id) ) {
-    request->send_P(503, PGmimejson, "[]");
+    request->send(503, PGmimejson, "[]");
     return;
   }
 
@@ -172,7 +172,7 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
   size_t cnt = 0;           // cnt - return last 'cnt' samples, 0 - all samples
 
   if (request->hasParam(C_scnt)){
-    AsyncWebParameter* p = request->getParam(C_scnt);
+    const AsyncWebParameter* p = request->getParam(C_scnt);
     if (!p->value().isEmpty())
       cnt = p->value().toInt();
   }
@@ -180,7 +180,7 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
 
   const auto ts = getTS(id);
   if (!ts)
-    request->send_P(503, PGmimejson, "[]");
+    request->send(503, PGmimejson, "[]");
 
   auto iter = ts->cbegin();   // get const iterator
 

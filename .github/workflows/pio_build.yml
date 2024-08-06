@@ -29,28 +29,28 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    if: github.repository == 'vortigont/espem'
     strategy:
       matrix:
         code:
           - "."
 
     steps:
-      - uses: actions/checkout@v3
-      - name: PIO Cache
-        id: cache-pio
-        uses: actions/cache@v3
+      - uses: actions/checkout@v4
+      - name: PIP Cache
+        id: cache-pip
+        uses: actions/cache@v4
         env:
-          cache-name: cache-pio-pkgs
+          cache-name: cache-pip-pkgs
         with:
           path: |
             ~/.cache/pip
-            ~/.platformio/.cache
-          key: ${{ runner.os }}-pio-${{env.cache-name}}
+          key: ${{ runner.os }}-pip-${{env.cache-name}}
           restore-keys: |
             ${{ runner.os }}-pio-
             ${{ runner.os }}-
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
           python-version: '3.x'
       - name: Install Platformio

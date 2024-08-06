@@ -1,5 +1,11 @@
 # Change Log
 
+## v3.2.1 (2024-08-06)
+* fix crashing in UI if TS datasource is not available somehow
+* adopt to asyncserver 3.x
+* Bump EmbUI to v3.1.2
+
+
 ## v3.2.0 (2023-12-09)
 * Update readme
 + implement Tiered TimeSeries data sampling

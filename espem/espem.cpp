@@ -138,7 +138,7 @@ void Espem::wdatareply(AsyncWebServerRequest *request){
 
   const auto m = pz->getMetricsPZ004();
   char buffer[JSON_SMPL_LEN];
-  sprintf_P(buffer, PGdatajsontpl,
+  sprintf(buffer, PGdatajsontpl,
             pz->getState()->dataAge(),
             m->asFloat(meter_t::vol),
             m->asFloat(meter_t::cur),
@@ -147,7 +147,7 @@ void Espem::wdatareply(AsyncWebServerRequest *request){
             m->asFloat(meter_t::frq),
             m->asFloat(meter_t::pf)
   );
-  request->send(200, FPSTR(PGmimejson), buffer );
+  request->send(200, PGmimejson, buffer );
 }
 
 
@@ -190,7 +190,7 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
 
   LOG(printf, "TimeSeries buffer has %d items, scntr: %d\n", ts->getSize(), cnt);
 
-  AsyncWebServerResponse* response = request->beginChunkedResponse(FPSTR(PGmimejson),
+  AsyncWebServerResponse* response = request->beginChunkedResponse(PGmimejson,
                                   [this, iter, ts](uint8_t* buffer, size_t buffsize, size_t index) mutable -> size_t {
 
       // If provided bufer is not large enough to fit 1 sample chunk, than I'm just sending

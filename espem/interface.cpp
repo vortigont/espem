@@ -293,7 +293,7 @@ void set_directctrls(Interface *interf, const JsonObject *data, const char* acti
     // ena/disable polling
     if (sv.compare(V_EPOLLENA) == 0){
         espem->set_uirate( (*data)[action] ? embui.paramVariant(V_UI_UPDRT) : 0);
-        LOG(printf_P, PSTR("ESPEM: UI refresh state: %d\n"), (*data)[A_EPOLLENA].as<int>() );
+        LOG(printf, "ESPEM: UI refresh state: %d\n", (*data)[A_EPOLLENA].as<int>() );
         return;
     }
 
@@ -301,7 +301,7 @@ void set_directctrls(Interface *interf, const JsonObject *data, const char* acti
     if (sv.compare(V_UI_UPDRT) == 0){
         espem->set_uirate((*data)[action]);
         embui.var(V_UI_UPDRT, espem->get_uirate());
-        LOG( printf_P, PSTR("ESPEM: Set UI update rate to: %d\n"), espem->get_uirate() );
+        LOG( printf, "ESPEM: Set UI update rate to: %d\n", espem->get_uirate() );
         return;
     }
 

@@ -1,0 +1,29 @@
+From 7d12a010a2a71428e6945c8c9c2d05073df379a2 Mon Sep 17 00:00:00 2001
+From: Emil Muratov <gpm@hotplug.ru>
+Date: Fri, 21 Jun 2024 17:01:38 +0900
+Subject: [PATCH] LDF: refresh lib dependency after recursive search
+
+LDF might mistakenly remove recursive dependency libs from a graph
+usually platform bundled ones
+
+Closes #4940
+---
+ platformio/builder/tools/piolib.py | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/platformio/builder/tools/piolib.py b/platformio/builder/tools/piolib.py
+index ca9c9f1..36b72d2 100644
+--- a/platformio/builder/tools/piolib.py
++++ b/platformio/builder/tools/piolib.py
+@@ -1159,6 +1159,8 @@ def ConfigureProjectLibBuilder(env):
+         for lb in lib_builders:
+             if lb in found_lbs:
+                 lb.search_deps_recursive(lb.get_search_files())
++        # refill found libs after recursive search
++        found_lbs = [lb for lb in lib_builders if lb.is_dependent]
+         for lb in lib_builders:
+             for deplb in lb.depbuilders[:]:
+                 if deplb not in found_lbs:
+-- 
+2.34.1
+

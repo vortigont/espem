@@ -242,7 +242,8 @@ function mkgauge(id, param){
         }
 }
 
-function mkchart(obj){
+function mkcharts(obj){
+    console.log('mkcharts:', obj);
     let id = obj.block[0].id;
     minichart.tier = obj.block[0].tier;
     minichart.scnt = obj.block[0].scnt;
@@ -349,3 +350,18 @@ function mkchart(obj){
 
     console.log("created gsmini");
 }
+
+// register user functions
+customFuncs["mkchart"] = mkcharts;
+customFuncs["mkgauge"] = mkgauge;
+
+
+// load EspEM's App UIData
+window.addEventListener("load", async function(ev){
+	let response = await fetch("/js/espem.ui.json", {method: 'GET'});
+	if (response.ok){
+		response = await response.json();
+		uiblocks['espem'] = {"ui": response};
+	}
+
+}.bind(window))

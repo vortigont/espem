@@ -104,12 +104,15 @@
 		{{/if}}
 		{{#if type == "checkbox"}}
 		    <div class="switch-block">
-			<input type="checkbox" id="{{id}}" name="{{id}}" class="checkbox" {{#if2 value == true || value == 1 || value == "true" || value == "1"}}checked{{/if2}} {{#if2 onChange}}{{onevent "click", "on_change", id}}{{/if2}}>
+				<input {{#disabled}}{{disabled}}{{/disabled}} type="checkbox" id="{{id}}" name="{{id}}" class="checkbox" {{#if2 value == true || value == 1 || value == "true" || value == "1"}}checked{{/if2}} {{#if2 onChange}}{{onevent "click", "on_change", id}}{{/if2}}>
 			<label class="switch" for="{{id}}"><span class="checkbox-label">{{label}}</span></label></input>
 		    </div>
 		{{/if}}
 		{{#if html == "const"}}
 			<div id="{{id}}" class="pure-u-1 pure-button mr">{{label}}{{#if2 value}}<input type="hidden" name="{{id}}" value="{{value}}">{{/if2}}</div>
+		{{/if}}
+		{{#if html == "constbtn"}}
+		    <input id="{{id}}" disabled {{#if2 color}}style="background-color: {{color}}"{{/if2}} class="pure-u-1 pure-button pure-button-primary mr" type="button" value="-" />
 		{{/if}}
 		{{#if html == "comment"}}
 			<div id="{{id}}" class="comment">{{label}}</div>
@@ -132,7 +135,11 @@
 				param.* - reserved
 			-->
            {{#if2 label}}<span id="{{id}}-lbl" class="comment">{{label}}</span>{{/if2}}
-           <div id="{{id}}-out" {{#if2 class}}class="{{class}}"{{/if2}}><div id="{{id}}">{{value}}</div></div>
+		   <div id="{{id}}-out" {{#if2 class}}class="{{class}}"{{/if2}}><div id="{{id}}">{{value}}</div></div>
+		{{/if}}
+		{{#if html == "div" && type == "chart"}}
+           {{#if2 label}}<span id="{{id}}-lbl" class="comment">{{label}}</span>{{/if2}}
+		   <div id="{{id}}" {{#if2 class}}class="{{class}}"{{/if2}}></div>
 		{{/if}}
 		{{#if html == "div" && type == "pbar"}}
 			<!-- live progressbar -->
@@ -191,10 +198,6 @@
 
 	<script src="js/lodash.custom.js"></script>
 	<script src="js/embui.js"></script>
-<!--
-	<script src="js/lib.js"></script>
-	<script src="js/maker.js"></script>
--->
 
 	<!-- amCharts javascript sources -->
 	<script src="https://cdn.amcharts.com/lib/3/amcharts.js" type="text/javascript"></script>

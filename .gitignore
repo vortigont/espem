@@ -2,6 +2,7 @@
 .vscode
 config.json
 lnk
+data.*
 drafts
 *.bin
 *.orig

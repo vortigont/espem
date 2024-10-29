@@ -2,26 +2,23 @@
  *  A code for ESP32 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
  *
- *  (c) Emil Muratov 2018-2022  https://github.com/vortigont/espem
+ *  (c) Emil Muratov 2018-2024  https://github.com/vortigont/espem
  *
  */
 
 #include "espem.h"
 #include "EmbUI.h"      // EmbUI framework
+#include "log.h"
 
-#define MAX_FREE_MEM_BLK ESP.getMaxAllocHeap()
-#define PUB_JSSIZE  1024
+
 // sprintf template for json sampling data
 #define JSON_SMPL_LEN 85    // {"t":1615496537000,"U":229.50,"I":1.47,"P":1216,"W":5811338,"hz":50.0,"pF":0.64},
-static const char PGsmpljsontpl[] PROGMEM = "{\"t\":%u000,\"U\":%.2f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f},";
-static const char PGdatajsontpl[] PROGMEM = "{\"age\":%llu,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f}";
+static constexpr const char* PGsmpljsontpl = "{\"t\":%u000,\"U\":%.2f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f},";
+static constexpr const char* PGdatajsontpl = "{\"age\":%llu,\"U\":%.1f,\"I\":%.2f,\"P\":%.0f,\"W\":%.0f,\"hz\":%.1f,\"pF\":%.2f}";
 
 // HTTP responce messages
-static const char PGsmpld[] = "Metrics collector disabled";
-static const char PGdre[] = "Data read error";
-static const char PGacao[] = "Access-Control-Allow-Origin";
-static const char* PGmimetxt = "text/plain";
-//static const char* PGmimehtml = "text/html; charset=utf-8";
+static constexpr const char* PGsmpld = "Metrics collector disabled";
+static constexpr const char* PGdre = "Data read error";
 
 using namespace pzmbus;     // use general pzem abstractions
 
@@ -37,7 +34,7 @@ public:
 };
 
 bool Espem::begin(const uart_port_t p, int rx, int tx){
-  LOG(printf, "espem.begin: port: %d, rx_pin: %d, tx_pin:%d\n", p, rx, tx);
+  LOGI(C_espem, printf, "espem.begin: port: %d, rx_pin: %d, tx_pin:%d\n", p, rx, tx);
 
   // let's make our begin idempotent )
   if (qport){
@@ -74,9 +71,9 @@ bool Espem::begin(const uart_port_t p, int rx, int tx){
 
   if (pz->autopoll(true)){
     t_uiupdater.restartDelayed();
-    LOG(println, "Autopolling enabled");
+    LOGI(C_espem, println, "Autopolling enabled");
   } else {
-      LOG(println, "Sorry, can't autopoll somehow :(");
+      LOGE(C_espem, println, "Error on enabling autopolling!");
   }
 
   embui.server.on(PSTR("/getdata"), HTTP_GET, [this](AsyncWebServerRequest *request){
@@ -123,12 +120,12 @@ String& Espem::mktxtdata ( String& txtdata) {
 // compat method for v 1.x cacti scripts
 void Espem::wpmdata(AsyncWebServerRequest *request) {
   if ( !ds.getTSsize(1) ) {
-    request->send(503, PGmimetxt, PGdre );
+    request->send(503, asyncsrv::T_text_plain, PGdre );
     return;
   }
 
   String data;
-  request->send(200, PGmimetxt, mktxtdata(data) );
+  request->send(200, asyncsrv::T_text_plain, mktxtdata(data) );
 }
 
 
@@ -147,7 +144,7 @@ void Espem::wdatareply(AsyncWebServerRequest *request){
             m->asFloat(meter_t::frq),
             m->asFloat(meter_t::pf)
   );
-  request->send(200, PGmimejson, buffer );
+  request->send(200, asyncsrv::T_application_json, buffer );
 }
 
 
@@ -162,7 +159,7 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
 
   // check if there is any sampled data
   if ( !getTSsize(id) ) {
-    request->send(503, PGmimejson, "[]");
+    request->send(503, asyncsrv::T_application_json, "[]");
     return;
   }
 
@@ -180,7 +177,7 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
 
   const auto ts = getTS(id);
   if (!ts)
-    request->send(503, PGmimejson, "[]");
+    request->send(503, asyncsrv::T_application_json, "[]");
 
   auto iter = ts->cbegin();   // get const iterator
 
@@ -188,9 +185,9 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
   if (cnt > 0 && cnt < ts->getSize())
     iter += ts->getSize() - cnt;                    // offset iterator to the last cnt elements
 
-  LOG(printf, "TimeSeries buffer has %d items, scntr: %d\n", ts->getSize(), cnt);
+  LOGV(C_espem, printf, "TimeSeries buffer has %d items, scntr: %d\n", ts->getSize(), cnt);
 
-  AsyncWebServerResponse* response = request->beginChunkedResponse(PGmimejson,
+  AsyncWebServerResponse* response = request->beginChunkedResponse(asyncsrv::T_application_json,
                                   [this, iter, ts](uint8_t* buffer, size_t buffsize, size_t index) mutable -> size_t {
 
       // If provided bufer is not large enough to fit 1 sample chunk, than I'm just sending
@@ -224,18 +221,18 @@ void DataStorage::wsamples(AsyncWebServerRequest *request) {
                     m.asFloat(meter_t::pf)
           );
         } else {
-            LOG(println, "SMLP pointer is null");
+            LOGW(C_espem, println, "SMLP pointer is null");
         }
 
         if (++iter == ts->cend())
           buffer[len-1] = 0x5d;   // ASCII ']' implaced over last comma
       }
 
-      LOG(printf, "Sending timeseries JSON, buffer %d/%d, items left: %d\n", len, buffsize, ts->cend() - iter);
+      LOGV(C_espem, printf, "Sending timeseries JSON, buffer %d/%d, items left: %d\n", len, buffsize, ts->cend() - iter);
       return len;
   });
 
-  response->addHeader(PGacao, "*");   // CORS header
+  response->addHeader(asyncsrv::T_CORS_ACAO, "*");   // CORS header
   request->send(response);
 }
 
@@ -246,20 +243,19 @@ void Espem::wspublish(){
 
   const auto m = pz->getMetricsPZ004();
 
-  DynamicJsonDocument doc(PUB_JSSIZE);
-  JsonObject obj = doc.to<JsonObject>();
-  doc["stale"] = pz->getState()->dataStale();
-  doc["age"] = pz->getState()->dataAge();
-  doc["U"] = m->voltage;
-  doc["I"] = m->current;
-  doc["P"] = m->power;
-  doc["W"] = m->energy + ds.getEnergyOffset();
-  doc["Pf"] = m->pf;
-  doc["freq"] = m->freq;
+  Interface interf(&embui.feeders);
+  interf.json_frame(C_espem, C_sample);
 
-  Interface interf(&embui.feeders, 128);
-  interf.json_frame(C_espem);
-  interf.jobject(doc, true);
+  JsonObject obj = interf.json_object_create();
+  obj["stale"] = pz->getState()->dataStale();
+  obj["age"] = pz->getState()->dataAge();
+  obj["U"] = m->voltage;
+  obj["I"] = m->current;
+  obj["P"] = m->power;
+  obj["W"] = m->energy + ds.getEnergyOffset();
+  obj["Pf"] = m->pf;
+  obj["freq"] = m->freq;
+
   interf.json_frame_flush();
 }
 
@@ -285,30 +281,30 @@ void DataStorage::reset(){
   tsids.clear();
 
   uint8_t a;
-  a = addTS(embui.paramVariant(V_TS_T1_CNT), time(nullptr), embui.paramVariant(V_TS_T1_INT), "Tier 1", 1);
+  a = addTS(embui.getConfig()[V_TS_T1_CNT] | TS_T1_CNT, time(nullptr), embui.getConfig()[V_TS_T1_INT] | TS_T1_INTERVAL, "Tier 1", 1);
   tsids.push_back(a);
-  //LOG(printf, "Add TS: %d\n", a);
+  LOGD(C_espem, printf, "Add TS: %d\n", a);
 
-  a = addTS(embui.paramVariant(V_TS_T2_CNT), time(nullptr), embui.paramVariant(V_TS_T2_INT), "Tier 2", 2);
+  a = addTS(embui.getConfig()[V_TS_T2_CNT] | TS_T2_CNT, time(nullptr), embui.getConfig()[V_TS_T2_INT] | TS_T2_INTERVAL, "Tier 2", 2);
   tsids.push_back(a);
-  //LOG(printf, "Add TS: %d\n", a);
+  LOGD(C_espem, printf, "Add TS: %d\n", a);
 
-  a = addTS(embui.paramVariant(V_TS_T3_CNT), time(nullptr), embui.paramVariant(V_TS_T3_INT), "Tier 3", 3);
+  a = addTS(embui.getConfig()[V_TS_T3_CNT] | TS_T3_CNT, time(nullptr), embui.getConfig()[V_TS_T3_INT] | TS_T3_INTERVAL, "Tier 3", 3);
   tsids.push_back(a);
-  //LOG(printf, "Add TS: %d\n", a);
+  LOG(printf, "Add TS: %d\n", a);
 
-  LOG(println, "Setup TimeSeries DB:");
+  LOGI(C_espem, println, "Setup TimeSeries DB:");
   LOG_CALL(
     for ( auto i : tsids ){
       auto t = getTS(i);
       if (t){
-        LOG(printf, "%s: size:%d, interval:%u, mem:%u\n", t->getDescr(), t->capacity, t->getInterval(), t->capacity * sizeof(pz004::metrics));
+        LOGI(C_espem, printf, "%s: size:%d, interval:%u, mem:%u\n", t->getDescr(), t->capacity, t->getInterval(), t->capacity * sizeof(pz004::metrics));
       }
     }
   )
 
-  LOG(printf, "SRAM: heap %u, free %u\n", ESP.getHeapSize(), ESP.getFreeHeap());
-  LOG(printf, "SPI-RAM: size %u, free %u\n", ESP.getPsramSize(), ESP.getFreePsram());
+  LOGI(C_espem, printf, "SRAM: heap %u, free %u\n", ESP.getHeapSize(), ESP.getFreeHeap());
+  LOGI(C_espem, printf, "SPI-RAM: size %u, free %u\n", ESP.getPsramSize(), ESP.getFreePsram());
 }
 
 mcstate_t Espem::set_collector_state(mcstate_t state){
@@ -351,7 +347,7 @@ mcstate_t Espem::set_collector_state(mcstate_t state){
 
 
 void msgdebug(uint8_t id, const RX_msg* m){
-    Serial.printf("\nCallback triggered for PZEM ID: %d\n", id);
+  LOGD("DBG", printf, "\nCallback triggered for PZEM ID: %d\n", id);
 
 /*
     It is also possible to work directly on a raw data from PZEM

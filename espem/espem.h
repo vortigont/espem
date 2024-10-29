@@ -10,9 +10,9 @@
 #include "main.h"
 #include "pzem_edl.hpp"
 #include "timeseries.hpp"
-
 // Tasker object from EmbUI
 #include "ts.h"
+#include "ESPAsyncWebServer.h"
 
 // Defaults
 #ifndef DEFAULT_WS_UPD_RATE

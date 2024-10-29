@@ -2,7 +2,7 @@
  *  A code for ESP32 based boards to interface with PeaceFair PZEM PowerMeters
  *  It can poll/collect PowerMeter data and provide it for futher processing in text/json format
  *
- *  (c) Emil Muratov 2017-2022
+ *  (c) Emil Muratov 2017-2024
  *
  */
 
@@ -14,13 +14,17 @@
 #include "interface.h"
 #include "log.h"
 
+#define BAUD_RATE       115200  // serial debug port baud rate
+#define HTTP_VER_BUFSIZE  256
 
-// PROGMEM strings
 // sprintf template for json version data
 static constexpr const char* PGverjson = "{\"ChipID\":\"%s\",\"Flash\":%u,\"SDK\":\"%s\",\"firmware\":\"" FW_NAME "\",\"version\":\"" FW_VERSION_STRING "\",\"git\":\"%s\",\"CPUMHz\":%u,\"RAM Heap size\":%u,\"RAM Heap free\":%u,\"PSRAM size\":%u,\"PSRAM free\":%u,\"Uptime\":%u}";
 
 // Our instance of espem
 Espem *espem = nullptr;
+
+// forward declaration
+void wver(AsyncWebServerRequest *request);
 
 // load configuration for espem and start it
 void setup_espem();
@@ -30,7 +34,7 @@ void setup_espem();
 void setup() {
 
 #ifdef ESPEM_DEBUG_PORT
-  ESPEM_DEBUG.begin(BAUD_RATE);  // start hw serial for debugging
+  ESPEM_DEBUG_PORT.begin(BAUD_RATE);  // start hw serial for debugging
 #endif
 
   LOGI(C_EspEM, println, "Starting EspEM...");
